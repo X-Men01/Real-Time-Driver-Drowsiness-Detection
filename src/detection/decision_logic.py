@@ -4,6 +4,7 @@ class DecisionLogic:
         self.yawning_threshold = yawning_threshold
 
     def determine_drowsiness(self, eye_state, mouth_state):
+        
         if eye_state == 1 or mouth_state == 1:  # Closed or Yawning
             return True  # Drowsy
         return False
