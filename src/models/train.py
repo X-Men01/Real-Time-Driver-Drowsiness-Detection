@@ -221,13 +221,13 @@ def test_step(
         from sklearn.metrics import classification_report
         report = classification_report(all_labels, all_predictions, 
                                      target_names=class_names, 
-                                     output_dict=True)
-        
-        for class_name in class_names:
-            metrics = report[class_name]
-            writer.add_scalar(f'Test/Precision_{class_name}', metrics['precision'], 0)
-            writer.add_scalar(f'Test/Recall_{class_name}', metrics['recall'], 0)
-            writer.add_scalar(f'Test/F1_{class_name}', metrics['f1-score'], 0)
+                                     output_dict=False)
+        writer.add_text("classification_report", report)
+        # for class_name in class_names:
+        #     metrics = report[class_name]
+        #     writer.add_scalar(f'Test/Precision_{class_name}', metrics['precision'], 0)
+        #     writer.add_scalar(f'Test/Recall_{class_name}', metrics['recall'], 0)
+        #     writer.add_scalar(f'Test/F1_{class_name}', metrics['f1-score'], 0)
             
     except Exception as e:
         print(f"Error creating confusion matrix: {e}")
@@ -285,8 +285,8 @@ def training(
         "learning_rate": optimizer.param_groups[0]['lr'],
         "batch_size": train_dataloader.batch_size,
         "epochs": epochs,
-        "train_dataset": train_dataloader.dataset.dataset,
-        "test_dataset": val_dataloader.dataset.dataset,
+        "train_dataset": train_dataloader.dataset,
+        "test_dataset": val_dataloader.dataset,
         
     }
     writer.add_text("hyperparameters", str(hparams))
@@ -347,7 +347,7 @@ def training(
             
             # Early stopping check
             if patience_counter >= early_stopping_patience:
-                print(f"\nEarly stopping triggered after {epoch + 1} epochs")
+                print(f"\033[91m\nEarly stopping triggered after {epoch + 1} epochs")
                 break
             
             # Step scheduler if provided
