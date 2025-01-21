@@ -1,0 +1,25 @@
+datasets/raw/Dataset_After_Auto_Cleaning/
+datasets/raw/Images_with_Issues/
+datasets/processed/Dataset_After_Manual_Cleaning/
+datasets/processed/*
+datasets/processed/Eyes_Dataset.zip
+logs/runs/
+datasets/raw/Dataset_Before_Cleaning/
+datasets/raw/Dataset_After_Auto_Cleaning.zip
+datasets/raw/Dataset_Before_Cleaning.zip
+datasets/raw/Images_with_Issues.zip
+src/.DS_Store
+__pycache__/
+*/.DS_Store
+*.DS_Store
+*.pyc
+
+# Ignore other common files
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+src/.DS_Store
+.DS_Store
+notebooks/best_model.pth
+.DS_Store
