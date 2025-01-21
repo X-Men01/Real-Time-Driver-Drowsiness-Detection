@@ -28,6 +28,8 @@ def display_images(imgs):
 
 
 
+
+
 def organize_dataset(source_path, dest_path, train_ratio=0.7, val_ratio=0.15, test_ratio=0.15):
     # Create directory structure
     for split in ['train', 'test', 'val']:
