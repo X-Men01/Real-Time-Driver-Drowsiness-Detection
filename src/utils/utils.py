@@ -7,6 +7,12 @@ from sklearn.model_selection import StratifiedShuffleSplit
 import numpy as np
 from collections import Counter
 from pathlib import Path
+import torch
+from torchvision.utils import make_grid
+import matplotlib.pyplot as plt
+import os
+import shutil
+from datetime import datetime
 
 
 def display_images(imgs):
@@ -164,5 +170,145 @@ def move_specified_files(file_names, source_dir, destination_dir):
        
 
     print("Specified images moved successfully.")
+
+
+def analyze_misclassified_images(model, test_dataloader, device, class_names, num_display=10):
+    """
+    Analyze misclassified images and copy them to a new directory for inspection.
+    """
+    model.eval()
+    all_misclassified = []  # Store all information together
+   
+    # Create directory for misclassified images
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    misclassified_dir = f"../misclassified_images_{timestamp}"
+    os.makedirs(misclassified_dir, exist_ok=True)
+   
+    with torch.no_grad():
+        for batch_idx, (images, labels) in enumerate(test_dataloader):
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            _, predicted = torch.max(outputs.data, 1)
+           
+            # Find misclassified images in this batch
+            incorrect_mask = predicted != labels
+           
+            for idx in range(len(images)):
+                if incorrect_mask[idx]:
+                    global_idx = batch_idx * test_dataloader.batch_size + idx
+                   
+                    # Store all information for each misclassified image
+                    all_misclassified.append({
+                        'image': images[idx].cpu(),
+                        'true_label': labels[idx].cpu().item(),
+                        'pred_label': predicted[idx].cpu().item(),
+                        'file_path': test_dataloader.dataset.imgs[global_idx][0]
+                    })
+   
+    # Print summary
+    print(f"Total misclassified images: {len(all_misclassified)}")
+    print(f"\nMisclassified images will be copied to: {misclassified_dir}")
+   
+    # Create figure for displaying images
+    num_images = min(num_display, len(all_misclassified))
+    nrows = (num_images + 4) // 5  # 5 images per row
+    ncols = min(5, num_images)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols*3, nrows*3))
+    if nrows == 1:
+        axes = axes.reshape(1, -1)
+   
+    # Create a log file for misclassifications
+    log_file_path = os.path.join(misclassified_dir, "misclassified_log.txt")
+    with open(log_file_path, 'w') as log_file:
+        log_file.write("Misclassified Images Analysis\n")
+        log_file.write("============================\n\n")
+       
+        for idx, misclassified in enumerate(all_misclassified):
+            true_label = class_names[misclassified['true_label']]
+            pred_label = class_names[misclassified['pred_label']]
+            original_path = misclassified['file_path']
+           
+            # Copy file
+            file_name = os.path.basename(original_path)
+            new_file_name = f"{true_label}_predicted_as_{pred_label}_{file_name}"
+            new_path = os.path.join(misclassified_dir, new_file_name)
+            shutil.copy2(original_path, new_path)
+           
+            # Log details
+            log_file.write(f"Image: {file_name}\n")
+            log_file.write(f"Original Path: {original_path}\n")
+            log_file.write(f"True Label: {true_label}\n")
+            log_file.write(f"Predicted Label: {pred_label}\n")
+            log_file.write("-------------------\n")
+           
+            # Display image if within num_display
+            if idx < num_display:
+                row = idx // ncols
+                col = idx % ncols
+                img = misclassified['image']
+                img_np = img.permute(1, 2, 0).numpy()
+                # img_np = (img_np * [0.229, 0.224, 0.225] + [0.485, 0.456, 0.406]).clip(0, 1)
+                axes[row, col].imshow(img_np)
+                axes[row, col].axis('off')
+                axes[row, col].set_title(f'True: {true_label}\nPred: {pred_label}', color='red')
+   
+    # Remove empty subplots
+    for idx in range(len(all_misclassified), nrows * ncols):
+        row = idx // ncols
+        col = idx % ncols
+        fig.delaxes(axes[row, col])
+   
+    plt.tight_layout()
+    plt.show()
+   
+    # Calculate per-class error analysis
+    class_errors = {}
+    for misclassified in all_misclassified:
+        true_class = class_names[misclassified['true_label']]
+        pred_class = class_names[misclassified['pred_label']]
+       
+        if true_class not in class_errors:
+            class_errors[true_class] = {'total': 0, 'misclassified_as': {}}
+       
+        class_errors[true_class]['total'] += 1
+        if pred_class not in class_errors[true_class]['misclassified_as']:
+            class_errors[true_class]['misclassified_as'][pred_class] = 0
+        class_errors[true_class]['misclassified_as'][pred_class] += 1
+   
+    # Write and print error analysis
+    with open(log_file_path, 'a') as log_file:
+        log_file.write("\n\nPer-Class Error Analysis\n")
+        log_file.write("=====================\n\n")
+        for class_name, errors in class_errors.items():
+            log_file.write(f"\n{class_name}:\n")
+            log_file.write(f"Total misclassified: {errors['total']}\n")
+            log_file.write("Misclassified as:\n")
+            for wrong_class, count in errors['misclassified_as'].items():
+                log_file.write(f"  - {wrong_class}: {count}\n")
+   
+    print("\nPer-Class Error Analysis:")
+    for class_name, errors in class_errors.items():
+        print(f"\n{class_name}:")
+        print(f"Total misclassified: {errors['total']}")
+        print("Misclassified as:")
+        for wrong_class, count in errors['misclassified_as'].items():
+            print(f"  - {wrong_class}: {count}")
+    # Use the function
+    # test_dataloader = DataLoader(
+    #     dataset=test_dataset,
+    #     batch_size=32,  # Make sure this matches your original batch size
+    #     shuffle=False,  # Important: keep shuffle False for correct indexing
+    #     num_workers=4
+    # )
+
+    # model.to(device)
+    # analyze_misclassified_images(
+    #     model=model,
+    #     test_dataloader=test_dataloader,
+    #     device=device,
+    #     class_names=class_names,
+    #     num_display=42
+    # )
+
 
 
