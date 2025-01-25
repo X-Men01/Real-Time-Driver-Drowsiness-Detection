@@ -1,90 +1,144 @@
 import mediapipe as mp
-import cv2
+from typing import Optional, NamedTuple
+import numpy as np
+
+
+class FacialFeatures(NamedTuple):
+    """Container for facial feature regions"""
+
+    left_eye: Optional[np.ndarray]
+    right_eye: Optional[np.ndarray]
+    mouth: Optional[np.ndarray]
+    success: bool
+
 
 class FeatureExtraction:
-    def __init__(self, static_image_mode=False, max_num_faces=1, refine_landmarks=False, min_detection_con=0.5, min_tracking_con=0.5):
-        # Initialize the parameters for face mesh detection
-        self.static_image_mode = static_image_mode  # Whether to process images (True) or video stream (False)
-        self.max_num_faces = max_num_faces  # Maximum number of faces to detect
-        self.refine_landmarks = refine_landmarks  # Whether to refine iris landmarks for better precision
-        self.min_detection_con = min_detection_con  # Minimum confidence for face detection
-        self.min_tracking_con = min_tracking_con  # Minimum confidence for tracking
+    LEFT_EYE_INDICES = (63, 107, 128, 117)
+    RIGHT_EYE_INDICES = (336, 293, 346, 357)
+    MOUTH_INDICES = (216, 322, 424, 210, 200)
 
-        # Initialize Mediapipe FaceMesh solution
-        self.mpFaceMesh = mp.solutions.face_mesh
-        self.faceMesh = self.mpFaceMesh.FaceMesh(self.static_image_mode,
-                                                 self.max_num_faces,
-                                                 self.refine_landmarks,
-                                                 self.min_detection_con,
-                                                 self.min_tracking_con)
+    def __init__(self,static_image_mode=False,max_num_faces=1,refine_landmarks=False,min_detection_con=0.5,min_tracking_con=0.5):
+        """Initialize the feature extraction with MediaPipe Face Mesh.
 
-        # Store the landmark indices for specific facial features
-        # These are predefined Mediapipe indices for left and right eyes and mouth
+        Args:
+            static_image_mode: Whether to treat input as static images
+            max_num_faces: Maximum number of faces to detect
+            refine_landmarks: Whether to refine face landmarks
+            min_detection_con: Minimum detection confidence threshold
+            min_tracking_con: Minimum tracking confidence threshold
 
-        self.LEFT_EYE_LANDMARKS = [63, 107, 128 ,117 ]  # Left eye landmarks
+        Raises:
+            ValueError: If confidence values are invalid or max_num_faces < 1
+        """
 
-        self.RIGHT_EYE_LANDMARKS = [336, 293, 346, 357]  # Right eye landmarks
+        if not (0 <= min_detection_con <= 1) or not (0 <= min_tracking_con <= 1):
+            raise ValueError("Confidence values must be between 0 and 1")
+        if max_num_faces < 1:
+            raise ValueError("max_num_faces must be greater than 0")
+
+        self.faceMesh = mp.solutions.face_mesh.FaceMesh(
+            static_image_mode=static_image_mode,
+            max_num_faces=max_num_faces,
+            refine_landmarks=refine_landmarks,
+            min_detection_confidence=min_detection_con,
+            min_tracking_confidence=min_tracking_con,
+        )
+    
+    def process_face(self, face: np.ndarray) -> FacialFeatures:
+        """Process a face image to extract facial features.
+
+        Args:
+            face: Input face image array
+
+        Returns:
+            FacialFeatures containing extracted regions and success status
+        """ 
         
-        self.MOUTH_LANDMARKS = [216 , 436, 430, 210]  # Mouth landmarks
-
-    def extract_features(self, img):
-         # Initialize a dictionary to store the landmarks for facial features
-        landmarks = {}
-
-        # Convert the input image to RGB as Mediapipe expects RGB images
-        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        # Process the image to find face landmarks using the FaceMesh model
-        results = self.faceMesh.process(imgRGB)
-
-        # Check if any faces were detected
-        if results.multi_face_landmarks:
-            # Iterate over detected faces (here, max_num_faces = 1, so usually one face)
-            for faceLms in results.multi_face_landmarks:
-                # Initialize lists in the landmarks dictionary to store each facial feature's coordinates
-                landmarks["left_eye_landmarks"] = []
-                landmarks["right_eye_landmarks"] = []
-                landmarks["mouth_landmarks"] = []
-                # landmarks["all_landmarks"] = []  # Store all face landmarks for complete face mesh
-                
-                # Loop through all face landmarks
-                for i, lm in enumerate(faceLms.landmark):
-                    h, w, ic = img.shape  # Get image height, width, and channel count
-                    x, y = int(lm.x * w), int(lm.y * h)  # Convert normalized coordinates to pixel values
-                    
-                    # Store the coordinates of all landmarks
-                    # landmarks["all_landmarks"].append((x, y))
-
-                    # Store specific feature landmarks based on the predefined indices
-                    if i in self.LEFT_EYE_LANDMARKS:
-                        landmarks["left_eye_landmarks"].append((x, y))  # Left eye
-                    if i in self.RIGHT_EYE_LANDMARKS:
-                        landmarks["right_eye_landmarks"].append((x, y))  # Right eye
-                    if i in self.MOUTH_LANDMARKS:
-                        landmarks["mouth_landmarks"].append((x, y))  # Mouth
-
-        # Return the processed image and the dictionary of feature landmarks
-        return landmarks
-    
-    
-    def get_feature_region(self, img, landmarks, padding=10):
-        if not landmarks:
-            return None
+        if face is None or face.size == 0:
+            return FacialFeatures(None, None, None, False)
+        try:
+            landmarks = self.extract_features(face)
             
-        # Get bounding box coordinates
-        x_coords = [x for x, y in landmarks]
-        y_coords = [y for x, y in landmarks]
+            left_eye_region = self.get_feature_region(face, landmarks["left_eye_landmarks"])
+            right_eye_region = self.get_feature_region(face, landmarks["right_eye_landmarks"])
+            mouth_region = self.get_feature_region(face, landmarks["mouth_landmarks"])
+            
+            success = all(region is not None for region in [left_eye_region, right_eye_region, mouth_region])
+            
+            return FacialFeatures(left_eye_region, right_eye_region, mouth_region, success)
         
+        except Exception as e:
+            print(f"Error processing face: {e}")
+            return FacialFeatures(None, None, None, False)
+
+    def extract_features(self, face):
+        """Extract facial landmarks from the input image.
+
+        Args:
+            face: Input face image array
+
+        Returns:
+            Dictionary containing landmark coordinates for facial features
+
+        Raises:
+            ValueError: If input image is invalid
+        """
+        
+
+        if face is None or face.size == 0:
+            raise ValueError("Invalid input image (face)")
+
+        landmarks = {
+            "left_eye_landmarks": [],
+            "right_eye_landmarks": [],
+            "mouth_landmarks": [],
+        }
+
+        try:
+            results = self.faceMesh.process(face)
+            if results.multi_face_landmarks:
+
+                face_landmarks = results.multi_face_landmarks[0]
+                h, w, ic = face.shape
+                for i, lm in enumerate(face_landmarks.landmark):
+
+                    x, y = int(lm.x * w), int(lm.y * h)  # Convert normalized coordinates to pixel values
+
+                    if i in self.LEFT_EYE_INDICES:
+                        landmarks["left_eye_landmarks"].append((x, y))
+                    if i in self.RIGHT_EYE_INDICES:
+                        landmarks["right_eye_landmarks"].append((x, y))
+                    if i in self.MOUTH_INDICES:
+                        landmarks["mouth_landmarks"].append((x, y))
+        except Exception as e:
+            print(f"Error processing face: {e}")
+
+        return landmarks
+
+    def get_feature_region(self, img, landmarks, padding=10):
+        """Extract a region around specified landmarks.
+
+        Args:
+            img: Input image array
+            landmarks: List of landmark coordinates
+            padding: Padding around the region
+
+        Returns:
+            Extracted image region or None if invalid
+        """
+        if not landmarks or img is None or img.size == 0:
+            return None
+
+       
+        x_coords, y_coords = zip(*landmarks)
+
         left = max(0, min(x_coords) - padding)
         right = min(img.shape[1], max(x_coords) + padding)
         top = max(0, min(y_coords) - padding)
         bottom = min(img.shape[0], max(y_coords) + padding)
-        
+
         # Extract the region
         region = img[top:bottom, left:right]
-        
-        # Ensure the region is not empty
-        if region.size == 0:
-            return None
-        
-        return region
+
+
+        return region if region.size > 0 else None

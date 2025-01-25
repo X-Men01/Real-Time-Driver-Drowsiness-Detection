@@ -7,58 +7,54 @@ from feature_extraction import FeatureExtraction
 from state_classification import StateClassification
 from decision_logic import DecisionLogic
 from alarm_system import AlarmSystem
+from config import Config
 from visualization.plot_results import plot_pipeline
-
-
+import sys
 
 def main():
+    # Load and validate configuration
+    config = Config()
+    config.validate()
    
     # Initialize modules
-    camera = CameraModule(camera_index=0, frame_width=224, frame_height=224)
-    face_detector = FaceDetection()
-    feature_extractor = FeatureExtraction()
-    state_classifier = StateClassification("../../src/models/eye_state_model.pth", "../../src/models/mouth_state_model.pth")
-    decision_logic = DecisionLogic()
+    camera = CameraModule(config.CAMERA_INDEX, config.FRAME_WIDTH, config.FRAME_HEIGHT)
+    face_detector = FaceDetection(config.FACE_DETECTION_CONFIDENCE, config.FACE_DETECTION_MODEL_SELECTION)
+    feature_extractor = FeatureExtraction(config.STATIC_IMAGE_MODE, config.MAX_NUM_FACES, config.REFINE_LANDMARKS, config.MIN_DETECTION_CONF, config.MIN_TRACKING_CONF)
+    
+    state_classifier = StateClassification(config.EYE_MODEL_PATH, config.MOUTH_MODEL_PATH, config.DEVICE)
+    decision_logic = DecisionLogic(config.EYE_CONFIDENCE_THRESHOLD, config.MOUTH_CONFIDENCE_THRESHOLD, config.MIN_CONFIDENCE)
     alarm_system = AlarmSystem()
-   
+    
+    
+    
     try:
         while True:
-            frame = cv2.imread("/Users/ahmedalkhulayfi/Downloads/images.jpeg")
-            # frame = camera.capture_frame()
+            frame = camera.capture_frame()
+            # frame = cv2.cvtColor(cv2.imread("/Users/ahmedalkhulayfi/Downloads/mediapipe_face_landmark_fullsize.png"), cv2.COLOR_BGR2RGB)
 
             # Face Detection
-            face = face_detector.detect_face(frame)
+            face_result = face_detector.detect_face(frame)
             
-            if face is not None:
-                landmarks = feature_extractor.extract_features(frame)
+            if face_result.success:
                 
-                # Get eye and mouth regions
-                left_eye_region = feature_extractor.get_feature_region(frame, landmarks["left_eye_landmarks"])
-                right_eye_region = feature_extractor.get_feature_region(frame, landmarks["right_eye_landmarks"])
-                mouth_region = feature_extractor.get_feature_region(frame, landmarks["mouth_landmarks"])
+                facial_features = feature_extractor.process_face(face_result.face)
+                states = state_classifier.process_features(facial_features)
+                decision = decision_logic.determine_drowsiness(states)
                 
-                if (left_eye_region is not None) and (right_eye_region is not None) and (mouth_region is not None):
-                    # Extract and classify eye and mouth states
-                    eye_state = state_classifier.classify_eye(left_eye_region)
-                    mouth_state = state_classifier.classify_mouth(mouth_region)
-                    print("Eye state:", eye_state)
-                    print("Mouth state:", mouth_state)
-
-                    # Decision Logic
-                    decision = decision_logic.determine_drowsiness(eye_state, mouth_state)
-                    if decision:
-                        # alarm_system.trigger_alarm()
-                        print("Drowsiness detected!")
+                if decision.success and decision.is_drowsy:
+                    # alarm_system.trigger_alarm()
+                    print("Drowsiness detected!")
+                     
                     
-                    plot_pipeline(frame, face, left_eye_region, right_eye_region, mouth_region, decision)
+                plot_pipeline(frame, face_result.face, facial_features, states, decision)
+                
                         
-                break
+                
 
     except KeyboardInterrupt:
         print("Stopping system...")
     finally:
-        pass
-        # camera.release()
+        camera.release()
         
 
 if __name__ == "__main__":
