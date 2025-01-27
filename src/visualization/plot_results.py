@@ -15,8 +15,8 @@ def plot_pipeline(original_frame, face_region,facial_features, states,decision):
     # plt.show()
     # Plot face region
    
-    axs[1].imshow(face_region)
-    axs[1].set_title("Detected Face")
+    axs[1].imshow(face_region.face)
+    axs[1].set_title(f"Detected Face {face_region.confidence:.2f}")
     axs[1].axis('off')
 
     # Plot left eye region
