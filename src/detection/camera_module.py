@@ -9,6 +9,7 @@ class CameraModule:
     def capture_frame(self):
         ret, frame = self.cap.read()
         if ret:
+            #! you need to specify the interpolation method
             frame = cv2.resize(frame, (self.frame_width, self.frame_height))
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             return frame

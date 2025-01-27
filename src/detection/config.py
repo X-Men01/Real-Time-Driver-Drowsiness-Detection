@@ -4,7 +4,8 @@ from typing import Dict
 import torch
 @dataclass(frozen=True)
 class Config:
-    """Central configuration for drowsiness detection system.
+    """
+    *Central configuration for drowsiness detection system.
     
     Using frozen=True makes the config immutable after creation.
     """
@@ -16,7 +17,7 @@ class Config:
     
     # Face Detection settings
     FACE_DETECTION_CONFIDENCE: float = 0.5
-    FACE_PADDING_PERCENT: float = 10.0
+    FACE_PADDING_PERCENT: float = 20.0
     FACE_DETECTION_MODEL_SELECTION: int = 0
     
     # Feature Extraction settings
@@ -33,12 +34,16 @@ class Config:
     DEVICE: str =  "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     
     # Classification thresholds
-    EYE_CONFIDENCE_THRESHOLD: float = 0.5
-    MOUTH_CONFIDENCE_THRESHOLD: float = 0.5
+    EYE_CONFIDENCE_THRESHOLD: float = 0.7
+    MOUTH_CONFIDENCE_THRESHOLD: float = 0.6
     MIN_CONFIDENCE: float = 0.5
-    # Performance monitoring
-    PERFORMANCE_WINDOW_SIZE: int = 30  # Number of frames for rolling average
     
+    # Alarm settings
+    ALARM_FILE: Path = Path("../../src/alarm/alarm.mp3")
+    
+   
+    #! Need to add more validation for the thresholds and other parameters
+    #! and why not validate everything here? and remove the validation in the other classes?
     def validate(self) -> None:
         """Validate configuration parameters."""
         if not (0 <= self.FACE_DETECTION_CONFIDENCE <= 1):

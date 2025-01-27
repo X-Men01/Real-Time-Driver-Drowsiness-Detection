@@ -34,12 +34,14 @@ class StateClassification:
         
         self.device = torch.device(device)
         
+        #! i think the input shape and hidden units should be set in training phase and built in the model class
         self.eye_model =  self._initialize_model(eye_model_path, input_shape=3, hidden_units=10, output_shape=2)
         self.mouth_model = self._initialize_model(mouth_model_path, input_shape=3, hidden_units=12, output_shape=2)
         
+        #! why not put the resize here?
         self.transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.5], std=[0.5])])
+            ])
     
     
     def process_features(self, features: FacialFeatures) -> StateResults:
@@ -52,16 +54,17 @@ class StateClassification:
             StateResults containing all classification results
         """
         if not features.success:
+            #! make sure this what we want
             return StateResults(1, 1, 0, 0.0, 0.0, 0.0, False)
             
         try:
-            # Classify left eye (default to closed=1 for safety)
+            # Classify left eye (default to open=1)  #! make sure this what we want
             left_eye_state, conf_left = self._classify_image(features.left_eye, self.eye_model, default_prediction=1 )
             
-            # Classify right eye (default to closed=1 for safety)
+            # Classify right eye (default to open=1)  #! make sure this what we want
             right_eye_state, conf_right = self._classify_image(features.right_eye, self.eye_model, default_prediction=1 )
             
-            # Classify mouth (default to not yawning=0)
+            # Classify mouth (default to not yawning=0)  #! make sure this what we want
             mouth_state, conf_mouth = self._classify_image(features.mouth, self.mouth_model, default_prediction=0)
             
             return StateResults(
@@ -95,6 +98,7 @@ class StateClassification:
             RuntimeError: If model loading fails
         """
         try:
+            #! why not put the input shape and hidden units in the model class?
             model = Custom_CNN(input_shape=input_shape, hidden_units=hidden_units, output_shape=output_shape).to(self.device)
 
             checkpoint = torch.load(model_path,map_location=self.device,weights_only=True)
@@ -149,9 +153,11 @@ class StateClassification:
         try:
             with torch.inference_mode():
                 output = model(tensor)
-                probabilities = torch.sigmoid(output)
+               
+                probabilities = torch.softmax(output, dim=1)
                 prediction = torch.argmax(output).item()
                 confidence = probabilities[0][prediction].item() # classify_eye tensor([[0.0203, 0.9558]])
+               
                 return prediction, confidence
         except Exception as e:
             print(f"Error in classification: {str(e)}")

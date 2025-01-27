@@ -53,15 +53,15 @@ class FeatureExtraction:
         Returns:
             FacialFeatures containing extracted regions and success status
         """ 
-        
-        if face is None or face.size == 0:
+       
+        if face.success is False:
             return FacialFeatures(None, None, None, False)
         try:
-            landmarks = self.extract_features(face)
+            landmarks = self.extract_features(face.face)
             
-            left_eye_region = self.get_feature_region(face, landmarks["left_eye_landmarks"])
-            right_eye_region = self.get_feature_region(face, landmarks["right_eye_landmarks"])
-            mouth_region = self.get_feature_region(face, landmarks["mouth_landmarks"])
+            left_eye_region = self.get_feature_region(face.face, landmarks["left_eye_landmarks"])
+            right_eye_region = self.get_feature_region(face.face, landmarks["right_eye_landmarks"])
+            mouth_region = self.get_feature_region(face.face, landmarks["mouth_landmarks"])
             
             success = all(region is not None for region in [left_eye_region, right_eye_region, mouth_region])
             
@@ -85,14 +85,10 @@ class FeatureExtraction:
         """
         
 
-        if face is None or face.size == 0:
-            raise ValueError("Invalid input image (face)")
-
         landmarks = {
             "left_eye_landmarks": [],
             "right_eye_landmarks": [],
-            "mouth_landmarks": [],
-        }
+            "mouth_landmarks": [],}
 
         try:
             results = self.faceMesh.process(face)
