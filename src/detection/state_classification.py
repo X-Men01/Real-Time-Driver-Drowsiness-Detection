@@ -1,11 +1,13 @@
 import torch
 import cv2
 from torchvision import transforms
-from models.cnn_model import Custom_CNN
+from models.cnn_model import Custom_CNN, Custom_CNN_V1
 from pathlib import Path
-from typing import Union, Optional, NamedTuple
+from typing import Union, Optional, NamedTuple, Tuple
 import numpy as np
 from detection.feature_extraction import FacialFeatures
+from detection.head_pose_estimator import HeadPoseEstimator
+from config import Config
 
 class StateResults(NamedTuple):
     """
@@ -19,28 +21,35 @@ class StateResults(NamedTuple):
     confidence_left: float
     confidence_right: float
     confidence_mouth: float
+    head_pose: Optional[Tuple[float, float, float]]  # (pitch, yaw, roll)
     success: bool
     
     
 class StateClassification:
     INPUT_SIZE = (128, 128)
     
-    def __init__(self, eye_model_path, mouth_model_path,  device: str = 'cpu') -> None:
+    DEFAULT_STATES = {
+        'eye_open': (1, 0.0),    # (state, confidence)
+        'eye_closed': (0, 0.0),
+        'mouth_normal': (0, 0.0)
+    }
+    
+    def __init__(self, config: Config) -> None:
         
-        if not Path(eye_model_path).exists():
-            raise FileNotFoundError(f"Eye model file not found at {eye_model_path}")
-        if not Path(mouth_model_path).exists():
-            raise FileNotFoundError(f"Mouth model file not found at {mouth_model_path}")
         
-        self.device = torch.device(device)
+        self.device = torch.device(config.DEVICE)
         
         #! i think the input shape and hidden units should be set in training phase and built in the model class
-        self.eye_model =  self._initialize_model(eye_model_path, input_shape=3, hidden_units=10, output_shape=2)
-        self.mouth_model = self._initialize_model(mouth_model_path, input_shape=3, hidden_units=12, output_shape=2)
+        self.eye_model =  self._initialize_model(config.EYE_MODEL_PATH, input_shape=3, hidden_units=10, output_shape=2)
+        self.mouth_model = self._initialize_model(config.MOUTH_MODEL_PATH, input_shape=3, hidden_units=12, output_shape=2)
+        self.head_pose_estimator = HeadPoseEstimator((config.FRAME_WIDTH, config.FRAME_HEIGHT))
+
         
-        #! why not put the resize here?
+      
         self.transform = transforms.Compose([
+           
             transforms.ToTensor(),
+            transforms.Resize(size=self.INPUT_SIZE),
             ])
     
     
@@ -55,7 +64,7 @@ class StateClassification:
         """
         if not features.success:
             #! make sure this what we want
-            return StateResults(1, 1, 0, 0.0, 0.0, 0.0, False)
+            return StateResults( *self.DEFAULT_STATES['eye_open'],*self.DEFAULT_STATES['eye_open'],*self.DEFAULT_STATES['mouth_normal'],None, False)
             
         try:
             # Classify left eye (default to open=1)  #! make sure this what we want
@@ -67,6 +76,9 @@ class StateClassification:
             # Classify mouth (default to not yawning=0)  #! make sure this what we want
             mouth_state, conf_mouth = self._classify_image(features.mouth, self.mouth_model, default_prediction=0)
             
+            # Add head pose estimation
+            head_pose = self.head_pose_estimator.estimate_pose(features.head_pose_landmarks)
+            
             return StateResults(
                 left_eye_state=left_eye_state,
                 right_eye_state=right_eye_state,
@@ -74,33 +86,23 @@ class StateClassification:
                 confidence_left=conf_left,
                 confidence_right=conf_right,
                 confidence_mouth=conf_mouth,
+                head_pose=head_pose,
                 success=True
             )
             
         except Exception as e:
-            print(f"Error processing features: {str(e)}")
-            return StateResults(1, 1, 0, 0.0, 0.0, 0.0, False)
+            print(f"\033[95mError processing features: {str(e)}\033[0m")
+            return StateResults(1, 1, 0, 0.0, 0.0, 0.0, None, False)
         
         
     def _initialize_model(self, model_path: Union[str, Path], input_shape: int, hidden_units: int, output_shape: int ) -> Custom_CNN:
-        """Initialize and load a model with weights.
-
-        Args:
-            model_path: Path to model weights
-            input_shape: Number of input channels
-            hidden_units: Number of hidden units
-            output_shape: Number of output classes
-
-        Returns:
-            Initialized model
-
-        Raises:
-            RuntimeError: If model loading fails
-        """
+        
+        
         try:
             #! why not put the input shape and hidden units in the model class?
             model = Custom_CNN(input_shape=input_shape, hidden_units=hidden_units, output_shape=output_shape).to(self.device)
-
+            # if hidden_units == 12:
+            #     model = Custom_CNN_V1().to(self.device)
             checkpoint = torch.load(model_path,map_location=self.device,weights_only=True)
             
             model.load_state_dict(checkpoint["model_state_dict"])
@@ -110,29 +112,6 @@ class StateClassification:
         except Exception as e:
             raise RuntimeError(f"Failed to load model from {model_path}: {str(e)}")
 
-
-    def _preprocess_image(self, image: Optional[np.ndarray] ) -> Optional[torch.Tensor]:
-        """Preprocess image for model input.
-
-        Args:
-            image: Input image array
-
-        Returns:
-            Preprocessed tensor or None if invalid input
-        """
-        if image is None or not isinstance(image, np.ndarray) or image.size == 0:
-            return None
-
-        try:
-            resized = cv2.resize(image, self.INPUT_SIZE)
-           
-            tensor = self.transform(resized).unsqueeze(0).to(self.device)
-            
-            return tensor
-        
-        except Exception as e:
-            print(f"Error preprocessing image: {str(e)}")
-            return None
         
         
     def _classify_image(self, image: Optional[np.ndarray],model: Custom_CNN, default_prediction: int = 0) -> tuple[int, float]:
@@ -146,14 +125,16 @@ class StateClassification:
         Returns:
             Tuple of (prediction, confidence)
         """
-        tensor = self._preprocess_image(image)
-        if tensor is None:
+        if image is None or image.size == 0:
             return default_prediction, 0.0
+        
+
 
         try:
+            tensor = self.transform(image).unsqueeze(0).to(self.device)
+            
             with torch.inference_mode():
                 output = model(tensor)
-               
                 probabilities = torch.softmax(output, dim=1)
                 prediction = torch.argmax(output).item()
                 confidence = probabilities[0][prediction].item() # classify_eye tensor([[0.0203, 0.9558]])

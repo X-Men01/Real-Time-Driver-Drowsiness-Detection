@@ -2,3 +2,13 @@ opencv-python
 mediapipe
 torch
 torchvision
+opencv-python
+mediapipe
+torch
+torchvision
+numpy
+playsound
+matplotlib
+dataclasses
+pathlib
+typing
