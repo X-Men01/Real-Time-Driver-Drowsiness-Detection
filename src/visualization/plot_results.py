@@ -47,3 +47,96 @@ def plot_pipeline(original_frame, face_region,facial_features, states,decision):
     # Display the plot
     plt.show()
 
+import cv2
+import numpy as np
+from typing import Tuple
+
+def draw_status_overlay(frame: np.ndarray, states, decision) -> np.ndarray:
+    """Draw status information on the video frame"""
+    
+    # Create a semi-transparent overlay for text background
+    overlay = frame.copy()
+    output = frame.copy()
+    
+    # Status box dimensions
+    box_height = 180
+    box_width = 400
+    padding = 10
+    
+    # Draw semi-transparent black box
+    cv2.rectangle(overlay, (padding, padding), 
+                 (box_width, box_height), (0, 0, 0), -1)
+    
+    # Apply transparency
+    alpha = 0.6
+    cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
+    
+    # Text settings
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.6
+    thickness = 2
+    text_color = (255, 255, 255)  # White
+    
+    # Status texts
+    texts = [
+        f"Drowsiness: {'DROWSY!' if decision.is_drowsy else 'Normal'} ({decision.confidence:.2f})",
+        f"Eyes: {'Closed' if decision.eye_status else 'Open'}",
+        f"Mouth: {'Yawning' if decision.yawn_status else 'Normal'}",
+        f"Head Position: {decision.head_pose_status}"
+    ]
+    
+   
+    
+    # Draw status texts
+    y_position = padding + 30
+    for text in texts:
+        cv2.putText(output, text, (padding + 10, y_position), 
+                   font, font_scale, text_color, thickness)
+        y_position += 30
+    
+    # Draw alert indicator
+    if decision.is_drowsy:
+        cv2.rectangle(output, (0, 0), (frame.shape[1], frame.shape[0]), 
+                     (0, 0, 255), 10)  # Red border for alert
+    
+    return output
+
+
+
+def draw_feature_windows(frame: np.ndarray, facial_features) -> np.ndarray:
+    """Draw small windows showing detected features"""
+    
+    if facial_features.left_eye is not None:
+        # Scale feature images to small size
+        feature_size = (100, 100)
+        left_eye = cv2.cvtColor(cv2.resize(facial_features.left_eye, feature_size), cv2.COLOR_RGB2BGR)
+        right_eye = cv2.cvtColor(cv2.resize(facial_features.right_eye, feature_size), cv2.COLOR_RGB2BGR)
+        mouth = cv2.cvtColor(cv2.resize(facial_features.mouth, feature_size), cv2.COLOR_RGB2BGR)
+        
+        # Calculate positions (bottom-right corner)
+        h, w = frame.shape[:2]
+        margin = 10
+        
+        # Create regions for feature windows
+        frame[h-feature_size[1]-margin:h-margin, 
+              w-3*feature_size[0]-2*margin:w-2*feature_size[0]-2*margin] = left_eye
+        frame[h-feature_size[1]-margin:h-margin, 
+              w-2*feature_size[0]-margin:w-feature_size[0]-margin] = right_eye
+        frame[h-feature_size[1]-margin:h-margin, 
+              w-feature_size[0]:w] = mouth
+        
+    return frame
+
+def display_frame(frame: np.ndarray, face_region, facial_features, states, decision) -> np.ndarray:
+    """Combine all visualization elements on the frame"""
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+    frame = cv2.flip(frame, 1)
+    
+    # Draw status overlay
+    output = draw_status_overlay(frame, states, decision)
+    
+    # Draw feature windows
+    if facial_features.success:
+        output = draw_feature_windows(output, facial_features)
+    
+    return output
