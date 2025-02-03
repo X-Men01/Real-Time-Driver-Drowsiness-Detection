@@ -10,7 +10,7 @@ class Config:
     Using frozen=True makes the config immutable after creation.
     """
     # Camera settings
-    CAMERA_INDEX: int = 0
+    CAMERA_INDEX: int = 1
     FRAME_WIDTH: int = 1280
     FRAME_HEIGHT: int = 720
     FPS: int = 30
@@ -39,8 +39,14 @@ class Config:
     MOUTH_CONFIDENCE_THRESHOLD: float = 0.6
     MIN_CONFIDENCE: float = 0.5
     HEAD_POSE_THRESHOLD: float = 20.0
+    
+    
     # Alarm settings
-    ALARM_FILE: Path = Path("../../src/alarm/alarm.mp3")
+    ALARM_FILE: Path = Path("../../assets/alarm_sound.mp3")
+    
+    # Temporal analysis settings
+    WINDOW_SIZE: int = 20
+    DROWSY_THRESHOLD: float = 0.6
     
    
     # Need to add more validation for the thresholds and other parameters
