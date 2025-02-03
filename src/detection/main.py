@@ -9,7 +9,7 @@ from decision_logic import DecisionLogic
 from alarm_system import AlarmSystem
 from config import Config
 from visualization.plot_results import plot_pipeline, display_frame
-
+from drowsiness_tracker import DrowsinessTracker
 
 def main():
     
@@ -23,7 +23,9 @@ def main():
     
     state_classifier = StateClassification(config)
     decision_logic = DecisionLogic(config)
-    alarm_system = AlarmSystem(config.ALARM_FILE)
+    alarm_system = AlarmSystem(config)
+    
+    tracker = DrowsinessTracker(config)
     
     cv2.namedWindow('Driver Monitoring', cv2.WINDOW_NORMAL)
     
@@ -45,28 +47,42 @@ def main():
                 states = state_classifier.process_features(facial_features)
                 decision = decision_logic.determine_drowsiness(states)
                 
-               
+                tracker.add_decision(decision)
                 
-                if decision.success and decision.is_drowsy:
-                    # alarm_system.trigger_alarm()
-                    print("Drowsiness detected!")
+                aggregated_state = tracker.is_drowsy()
+                aggregated_conf = tracker.aggregated_confidence()
+                
+                if aggregated_state:
+                    alarm_system.trigger_alarm()
+                    print("\033[95mDrowsiness detected!\033[0m")
+               
                     
                 output_frame = display_frame(
                     frame, 
                     face_result,
                     facial_features,
                     states,
-                    decision
-                )
+                    decision,
+                    aggregated_state,
+                    aggregated_conf)
                 
-                cv2.imshow('Driver Monitoring', output_frame)
+               
+                
+                
+            else:
+                output_frame = cv2.flip(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR), 1)
+                cv2.putText(output_frame, "Face not detected", (50, 50),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+               
+            cv2.imshow('Driver Monitoring', output_frame)    
             # sys.exit()
             # Check for exit command
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break     
-                     
                     
+           
                 # plot_pipeline(frame, face_result, facial_features, states, decision)
+            
                 
                         
             # sys.exit()
@@ -74,8 +90,10 @@ def main():
     except KeyboardInterrupt:
         print("Stopping system...")
     finally:
-        # camera.release()
-        pass
+       camera.release()
+       cv2.destroyAllWindows()
+      
+        
         
         
 
