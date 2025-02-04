@@ -91,19 +91,20 @@ class PerformanceMonitor:
 
 
 def main():
-    # Load and validate configuration
     config = Config()
     config.validate()
-   
-    # Initialize modules
-    camera = CameraModule(config.CAMERA_INDEX, config.FRAME_WIDTH, config.FRAME_HEIGHT)
-    face_detector = FaceDetection(config.FACE_DETECTION_CONFIDENCE, config.FACE_DETECTION_MODEL_SELECTION)
-    feature_extractor = FeatureExtraction(config.STATIC_IMAGE_MODE, config.MAX_NUM_FACES, config.REFINE_LANDMARKS, config.MIN_DETECTION_CONF, config.MIN_TRACKING_CONF)
     
-    state_classifier = StateClassification(config.EYE_MODEL_PATH, config.MOUTH_MODEL_PATH, config.DEVICE)
-    decision_logic = DecisionLogic(config.EYE_CONFIDENCE_THRESHOLD, config.MOUTH_CONFIDENCE_THRESHOLD, config.MIN_CONFIDENCE)
-    alarm_system = AlarmSystem()
-    monitor = PerformanceMonitor(config.PERFORMANCE_WINDOW_SIZE)
+    
+    camera = CameraModule(config)
+    face_detector = FaceDetection(config)
+    feature_extractor = FeatureExtraction(config)
+    
+    state_classifier = StateClassification(config)
+    decision_logic = DecisionLogic(config)
+    alarm_system = AlarmSystem(config)
+    
+    # tracker = DrowsinessTracker(config)
+    monitor = PerformanceMonitor(100)
     
     
     try:
