@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict
 import torch
+import logging
 @dataclass(frozen=True)
 class Config:
     """
@@ -13,7 +14,7 @@ class Config:
     CAMERA_INDEX: int = 1
     FRAME_WIDTH: int = 1280
     FRAME_HEIGHT: int = 720
-    FPS: int = 30
+   
     
     # Face Detection settings
     FACE_DETECTION_CONFIDENCE: float = 0.5
@@ -36,17 +37,20 @@ class Config:
     
     # Classification thresholds
     EYE_CONFIDENCE_THRESHOLD: float = 0.7
-    MOUTH_CONFIDENCE_THRESHOLD: float = 0.6
-    MIN_CONFIDENCE: float = 0.5
+    MOUTH_CONFIDENCE_THRESHOLD: float = 0.7
+    MIN_CONFIDENCE: float = 0.7
     HEAD_POSE_THRESHOLD: float = 20.0
     
     
     # Alarm settings
-    ALARM_FILE: Path = Path("../../assets/alarm_sound.mp3")
+    DROWSINESS_ALARM_FILE: Path = Path("../../assets/drowsiness_alarm.mp3")
+    DISTRACTION_ALARM_FILE: Path = Path("../../assets/distraction_alarm.mp3")
     
     # Temporal analysis settings
-    WINDOW_SIZE: int = 20
+    WINDOW_SIZE_DROWSINESS: int = 60
     DROWSY_THRESHOLD: float = 0.6
+    WINDOW_SIZE_HEAD_POSE: int = 100
+    HEAD_POSE_NON_FORWARD_THRESHOLD: float = 0.8
     
    
     # Need to add more validation for the thresholds and other parameters
@@ -69,5 +73,7 @@ class Config:
             raise ValueError("Confidence values must be between 0 and 1")
         if self.MAX_NUM_FACES < 1:
             raise ValueError("max_num_faces must be greater than 0")
+        
+        logging.info("Configuration validated successfully.")  
     
    
