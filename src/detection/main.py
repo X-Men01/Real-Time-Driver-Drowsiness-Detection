@@ -53,7 +53,7 @@ def main():
 
                 if tracker.is_head_pose_alert():
                     alarm_system.trigger_alarm("Distraction")
-                    print("\033[33mHead pose alert!\033[0m")
+                    print("\033[33mDistraction alert!\033[0m")
                     
                     
                 alarm_active = alarm_system.is_active
