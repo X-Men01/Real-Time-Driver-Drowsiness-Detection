@@ -7,7 +7,7 @@ from typing import Union, Optional, NamedTuple, Tuple
 import numpy as np
 from detection.feature_extraction import FacialFeatures
 from detection.head_pose_estimator import HeadPoseEstimator
-from config import Config
+from detection.config import Config
 
 class StateResults(NamedTuple):
     """
@@ -40,7 +40,7 @@ class StateClassification:
         self.device = torch.device(config.DEVICE)
         
         #! i think the input shape and hidden units should be set in training phase and built in the model class
-        self.eye_model =  self._initialize_model(config.EYE_MODEL_PATH, input_shape=3, hidden_units=10, output_shape=2)
+        self.eye_model =  self._initialize_model(config.EYE_MODEL_PATH, input_shape=3, hidden_units=11, output_shape=2)
         self.mouth_model = self._initialize_model(config.MOUTH_MODEL_PATH, input_shape=3, hidden_units=12, output_shape=2)
         self.head_pose_estimator = HeadPoseEstimator((config.FRAME_WIDTH, config.FRAME_HEIGHT))
 
@@ -50,7 +50,7 @@ class StateClassification:
            
             transforms.ToTensor(),
             transforms.Resize(size=self.INPUT_SIZE),
-            ])
+          ])
     
     
     def process_features(self, features: FacialFeatures) -> StateResults:
@@ -101,8 +101,8 @@ class StateClassification:
         try:
             #! why not put the input shape and hidden units in the model class?
             model = Custom_CNN(input_shape=input_shape, hidden_units=hidden_units, output_shape=output_shape).to(self.device)
-            # if hidden_units == 12:
-            #     model = Custom_CNN_V1().to(self.device)
+            if hidden_units == 12:
+                model = Custom_CNN_V1().to(self.device)
             checkpoint = torch.load(model_path,map_location=self.device,weights_only=True)
             
             model.load_state_dict(checkpoint["model_state_dict"])
