@@ -1,6 +1,6 @@
 from typing import NamedTuple, Optional, Tuple
 from detection.state_classification import StateResults
-from config import Config
+from detection.config import Config
 """
 
 ?| **Scenario** | **Left Eye State** | **Right Eye State** | **Mouth State** | **Interpretation**                                   |
@@ -59,9 +59,9 @@ class DecisionLogic:
             return self._get_default_result()
 
         try:
-            # Check confidence levels
-            if not self._check_confidence(states):
-                return self._get_default_result()
+            # # Check confidence levels
+            # if not self._check_confidence(states):
+            #     return self._get_default_result()
 
             # Analyze eye states
             eyes_indicate_drowsy = self._check_eye_state(states.left_eye_state,states.right_eye_state,states.confidence_left,states.confidence_right)
@@ -73,7 +73,7 @@ class DecisionLogic:
             head_pose_position = self._get_head_position(states.head_pose)
 
             # Calculate overall confidence
-            confidence = confidence = self._calculate_confidence(
+            confidence =  self._calculate_confidence(
                                         states.confidence_left,
                                         states.confidence_right,
                                         states.confidence_mouth,
@@ -81,6 +81,9 @@ class DecisionLogic:
                                         is_yawning)
 
             # Make final decision
+            if confidence < self.min_confidence:
+                return self._get_default_result()
+            
             is_drowsy = eyes_indicate_drowsy or is_yawning
 
             return DecisionResult( is_drowsy=is_drowsy, eye_status=eyes_indicate_drowsy, yawn_status=is_yawning, confidence=confidence, head_pose_status=head_pose_position, success=True)
