@@ -1,6 +1,6 @@
 import playsound
 import threading
-from config import Config
+from detection.config import Config
 
 class AlarmSystem:
     def __init__(self,config: Config):
