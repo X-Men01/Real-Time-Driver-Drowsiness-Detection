@@ -1,8 +1,8 @@
 import mediapipe as mp
 from typing import Optional, NamedTuple
 import numpy as np
-from config import Config
-from face_detection import FaceRegion
+from detection.config import Config
+from detection.face_detection import FaceRegion
 
 
 class FacialFeatures(NamedTuple):
