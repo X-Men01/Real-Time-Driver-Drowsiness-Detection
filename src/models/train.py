@@ -265,6 +265,9 @@ def training(
     Returns:
        Best model
     """
+    
+    model = torch.compile(model)
+    print("\033[32mModel compiled successfully using torch.compile\033[0m")
    # Create run name and directories
     if experiment_name is None:
         experiment_name = create_run_name(model, optimizer)
