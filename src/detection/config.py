@@ -31,15 +31,15 @@ class Config:
     
     # Model settings
     MODEL_DIR: Path = Path("../../src/models")
-    EYE_MODEL_PATH: Path = MODEL_DIR / "eye_state_model.pt"
-    MOUTH_MODEL_PATH: Path = MODEL_DIR / "mouth_state_model.pt"
+    EYE_MODEL_PATH: Path = MODEL_DIR / "eye_state_model_V2.pt"
+    MOUTH_MODEL_PATH: Path = MODEL_DIR / "mouth_state_model_V2.pt"
     DEVICE: str =  "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     
     # Classification thresholds
     EYE_CONFIDENCE_THRESHOLD: float = 0.7
     MOUTH_CONFIDENCE_THRESHOLD: float = 0.7
-    MIN_CONFIDENCE: float = 0.7
-    HEAD_POSE_THRESHOLD: float = 20.0
+    MIN_CONFIDENCE: float = 0.9
+    HEAD_POSE_THRESHOLD: float = 30.0
     
     
     # Alarm settings
@@ -47,7 +47,7 @@ class Config:
     DISTRACTION_ALARM_FILE: Path = Path("../../assets/distraction_alarm.mp3")
     
     # Temporal analysis settings
-    WINDOW_SIZE_DROWSINESS: int = 60
+    WINDOW_SIZE_DROWSINESS: int = 180
     DROWSY_THRESHOLD: float = 0.6
     WINDOW_SIZE_HEAD_POSE: int = 100
     HEAD_POSE_NON_FORWARD_THRESHOLD: float = 0.8
