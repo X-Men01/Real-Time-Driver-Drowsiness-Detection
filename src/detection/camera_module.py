@@ -1,5 +1,5 @@
 import cv2
-from config import Config
+from detection.config import Config
 
 
 class CameraModule:
