@@ -2,7 +2,7 @@ import cv2
 import mediapipe as mp
 from typing import NamedTuple, Optional, Tuple
 import numpy as np
-from config import Config
+from detection.config import Config
 
 
 class FaceRegion(NamedTuple):
