@@ -33,8 +33,11 @@ def main():
         while True:
             
             success, frame = camera.capture_frame()
+            
+            if not success:
+                continue
 
-            face_result = face_detector.detect_face(frame)
+            face_result = face_detector.detect_face(frame) 
 
             if face_result.success:
 
@@ -57,12 +60,12 @@ def main():
                     
                     
                 alarm_active = alarm_system.is_active
-                output_frame = display_frame(frame,face_result,facial_features,states,decision,alarm_active,drowsy_conf,)
+                output_frame = display_frame(frame,face_result,facial_features,states,decision,alarm_active,drowsy_conf,True)
 
             else:
-                output_frame = cv2.flip(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR), 1)
-                cv2.putText(output_frame,"Face not detected",(50, 50),cv2.FONT_HERSHEY_SIMPLEX,1,(0, 0, 255),2,)
-
+                alarm_system.trigger_alarm("Face_not_detected")
+                output_frame = display_frame(frame,face_result,facial_features,states,decision,alarm_active,drowsy_conf,False)
+            
             cv2.imshow("Driver Monitoring", output_frame)
            
             if cv2.waitKey(1) & 0xFF == ord("q"):
