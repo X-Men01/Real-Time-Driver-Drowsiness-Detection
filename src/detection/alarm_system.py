@@ -6,7 +6,8 @@ class AlarmSystem:
     def __init__(self,config: Config):
         self.alarm_files = {
             "Drowsiness": config.DROWSINESS_ALARM_FILE,
-            "Distraction": config.DISTRACTION_ALARM_FILE
+            "Distraction": config.DISTRACTION_ALARM_FILE,
+            "Face_not_detected": config.FACE_NOT_DETECTED_ALARM_FILE
         }
         self.alarm_thread = None
 
