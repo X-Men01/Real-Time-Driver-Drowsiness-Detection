@@ -8,7 +8,8 @@ import numpy as np
 from detection.feature_extraction import FacialFeatures
 from detection.head_pose_estimator import HeadPoseEstimator
 from detection.config import Config
-
+import torchvision
+import torch.nn as nn
 class StateResults(NamedTuple):
     """
     Container for all classification results
@@ -47,9 +48,11 @@ class StateClassification:
         
       
         self.transform = transforms.Compose([
-           
+          
             transforms.ToTensor(),
             transforms.Resize(size=self.INPUT_SIZE),
+          
+         
           ])
     
     
@@ -100,13 +103,21 @@ class StateClassification:
         
         try:
             #! why not put the input shape and hidden units in the model class?
-            model = Custom_CNN(input_shape=input_shape, hidden_units=hidden_units, output_shape=output_shape).to(self.device)
+          
             if hidden_units == 12:
                 model = Custom_CNN_V1().to(self.device)
-            checkpoint = torch.load(model_path,map_location=self.device,weights_only=True)
+                checkpoint = torch.load(model_path,map_location=self.device,weights_only=True)
+                model.load_state_dict(checkpoint["model_state_dict"])
+                model.eval()
+            else: 
+                model = Custom_CNN(input_shape,hidden_units,output_shape).to(self.device)
+                checkpoint = torch.load(model_path,map_location=self.device,weights_only=True)
+                model.load_state_dict(checkpoint["model_state_dict"])
+                model.eval()
+                
+            # checkpoint = torch.load(model_path,map_location=self.device,weights_only=True)
             
-            model.load_state_dict(checkpoint["model_state_dict"])
-            model.eval()
+           
             return model
 
         except Exception as e:
