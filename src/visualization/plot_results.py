@@ -135,16 +135,21 @@ def draw_feature_windows(frame: np.ndarray, facial_features) -> np.ndarray:
 
     return frame
 
-def display_frame(frame: np.ndarray, face_region, facial_features, states, decision, aggregated_state,aggregated_conf) -> np.ndarray:
+def display_frame(frame: np.ndarray, face_region, facial_features, states, decision, aggregated_state,aggregated_conf, flag_normal_state) -> np.ndarray:
     """Combine all visualization elements on the frame"""
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     frame = cv2.flip(frame, 1)
-    
-    # Draw status overlay
-    output = draw_status_overlay(frame, states, decision,aggregated_state,aggregated_conf )
-    
-    # Draw feature windows
-    if facial_features.success:
-        output = draw_feature_windows(output, facial_features)
+    if flag_normal_state:
+        # Draw status overlay
+        output = draw_status_overlay(frame, states, decision,aggregated_state,aggregated_conf )
+        
+        # Draw feature windows
+        if facial_features.success:
+            output = draw_feature_windows(output, facial_features)
+    else:
+        output = frame
+        cv2.putText(output,"Face not detected",(50, 50),cv2.FONT_HERSHEY_SIMPLEX,1,(0, 0, 255),2,)
+        cv2.rectangle(output, (0, 0), (frame.shape[1], frame.shape[0]), (0, 0, 255), 10)  # Red border for alert
+        
     
     return output
