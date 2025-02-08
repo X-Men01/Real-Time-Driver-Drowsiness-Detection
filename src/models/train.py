@@ -266,8 +266,7 @@ def training(
        Best model
     """
     
-    model = torch.compile(model)
-    print("\033[32mModel compiled successfully using torch.compile\033[0m")
+    
    # Create run name and directories
     if experiment_name is None:
         experiment_name = create_run_name(model, optimizer)
@@ -281,7 +280,7 @@ def training(
     
     # Initialize TensorBoard writer
     writer = SummaryWriter(run_dir)
-    
+  
     hparams = {
         "model_type": model.__class__.__name__,
         "optimizer": optimizer.__class__.__name__,
@@ -292,6 +291,7 @@ def training(
         "test_dataset": val_dataloader.dataset,
         
     }
+    print(hparams)
     writer.add_text("hyperparameters", str(hparams))
    
     best_acc = 0.0
@@ -306,6 +306,10 @@ def training(
     #     writer.add_graph(model, sample_images)
     # except Exception as e:
     #     print(f"Could not log model graph: {e}")
+    
+    model = torch.compile(model)
+    print("\033[32mModel compiled successfully using torch.compile\033[0m")
+    
     
     # Training loop
     for epoch in tqdm(range(epochs), desc="Training Progress"):
