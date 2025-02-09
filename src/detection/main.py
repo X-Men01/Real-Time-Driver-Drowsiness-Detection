@@ -9,7 +9,7 @@ from alarm_system import AlarmSystem
 from config import Config
 from visualization.plot_results import display_frame
 from tracker import Tracker
-
+from facial_measurement import FacialMeasurements
 
 
 def main():
@@ -42,6 +42,8 @@ def main():
             if face_result.success:
 
                 facial_features = feature_extractor.process_face(face_result)
+                metrics = FacialMeasurements.calculate_metrics(facial_features)
+                
                 states = state_classifier.process_features(facial_features)
                 decision = decision_logic.determine_drowsiness(states)
 
@@ -60,11 +62,11 @@ def main():
                     
                     
                 alarm_active = alarm_system.is_active
-                output_frame = display_frame(frame,face_result,facial_features,states,decision,alarm_active,drowsy_conf,True)
+                output_frame = display_frame(frame,face_result,facial_features,states,decision,alarm_active,drowsy_conf,True ,metrics)
 
             else:
                 alarm_system.trigger_alarm("Face_not_detected")
-                output_frame = display_frame(frame,face_result,facial_features,states,decision,alarm_active,drowsy_conf,False)
+                output_frame = display_frame(frame,face_result,facial_features,states,decision,alarm_active,drowsy_conf,False,metrics)
             
             cv2.imshow("Driver Monitoring", output_frame)
            
