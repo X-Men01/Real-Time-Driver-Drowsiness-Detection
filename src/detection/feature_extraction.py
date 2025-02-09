@@ -12,6 +12,9 @@ class FacialFeatures(NamedTuple):
     right_eye: Optional[np.ndarray]
     mouth: Optional[np.ndarray]
     head_pose_landmarks: Optional[np.ndarray]
+    ear_left_landmarks: Optional[np.ndarray]
+    ear_right_landmarks: Optional[np.ndarray]
+    mar_mouth_landmarks: Optional[np.ndarray]
     success: bool
 
 
@@ -20,6 +23,13 @@ class FeatureExtraction:
     RIGHT_EYE_INDICES = (336, 293, 346, 357)
     MOUTH_INDICES = (216, 322, 424, 210, 152)
     HEAD_POSE_LANDMARKS = (33, 263, 1, 61, 291, 199)  # Nose, eyes, ears
+    
+    EAR_LEFT_EYE_INDICES = [362, 385, 387, 263, 373, 380]
+    
+    EAR_RIGHT_EYE_INDICES = [33, 160, 158, 133, 153, 144]
+    
+    MAR_MOUTH_INDICES = [61, 291, 39, 181, 0, 17, 269, 405]
+    
 
     def __init__(self, config: Config):
         """Initialize the feature extraction with MediaPipe Face Mesh.
@@ -47,7 +57,7 @@ class FeatureExtraction:
     def process_face(self, face_region: FaceRegion) -> FacialFeatures:
 
         if not face_region.success or face_region.face is None:
-            return FacialFeatures(None, None, None, None, False)
+            return FacialFeatures(None, None, None, None, None, None, None, False)
 
         try:
             landmarks = self._extract_features(face_region.face)
@@ -55,6 +65,9 @@ class FeatureExtraction:
             left_eye_region = self.get_feature_region(face_region.face, landmarks["left_eye_landmarks"], self.feature_padding)
             right_eye_region = self.get_feature_region(face_region.face, landmarks["right_eye_landmarks"], self.feature_padding)
             mouth_region = self.get_feature_region(face_region.face, landmarks["mouth_landmarks"], self.feature_padding)
+            
+            
+            
 
             success = all(
                 region is not None
@@ -65,10 +78,14 @@ class FeatureExtraction:
                 right_eye_region,
                 mouth_region,
                 landmarks["head_pose_landmarks"],
-                success,)
+                landmarks["ear_left_landmarks"],
+                landmarks["ear_right_landmarks"],
+                landmarks["mar_mouth_landmarks"],
+                success,
+                )
 
         except Exception as e:
-            return FacialFeatures(None, None, None, None, False)
+            return FacialFeatures(None, None, None, None, None, None, None, False)
 
     def _extract_features(self, face):
 
@@ -76,7 +93,10 @@ class FeatureExtraction:
             "left_eye_landmarks": [],
             "right_eye_landmarks": [],
             "mouth_landmarks": [],
-            "head_pose_landmarks": [],}
+            "head_pose_landmarks": [],
+            "ear_left_landmarks": {},
+            "ear_right_landmarks": {},
+            "mar_mouth_landmarks": {},}
 
         try:
             results = self.faceMesh.process(face)
@@ -94,8 +114,16 @@ class FeatureExtraction:
                         landmarks["right_eye_landmarks"].append((x, y))
                     elif i in self.MOUTH_INDICES:
                         landmarks["mouth_landmarks"].append((x, y))
+                        
                     elif i in self.HEAD_POSE_LANDMARKS:
                         landmarks["head_pose_landmarks"].append([x, y, landmark.z])
+                        
+                    if i in self.EAR_LEFT_EYE_INDICES:
+                        landmarks["ear_left_landmarks"][str(i)] = (x, y)
+                    elif i in self.EAR_RIGHT_EYE_INDICES:
+                        landmarks["ear_right_landmarks"][str(i)] = (x, y)
+                    elif i in self.MAR_MOUTH_INDICES:
+                        landmarks["mar_mouth_landmarks"][str(i)] = (x, y)
                         
                 return landmarks 
         except Exception as e:
