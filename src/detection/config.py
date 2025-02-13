@@ -6,7 +6,7 @@ import logging
 @dataclass(frozen=True)
 class Config:
     """
-    *Central configuration for drowsiness detection system.
+    Central configuration for drowsiness detection system.
     
     Using frozen=True makes the config immutable after creation.
     """
@@ -52,9 +52,12 @@ class Config:
     WINDOW_SIZE_HEAD_POSE: int = 100
     HEAD_POSE_NON_FORWARD_THRESHOLD: float = 0.8
     
+    # Facial measurement thresholds
+    EAR_THRESHOLD: float = 0.18
+    YAWN_THRESHOLD: float = 0.7
    
     # Need to add more validation for the thresholds and other parameters
-    #! and why not validate everything here? and remove the validation in the other classes?
+   
     def validate(self) -> None:
         """Validate configuration parameters."""
         if not (0 <= self.FACE_DETECTION_CONFIDENCE <= 1):
