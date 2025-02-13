@@ -26,6 +26,7 @@ def main():
     alarm_system = AlarmSystem(config)
 
     tracker = Tracker(config)
+    facial_measurements = FacialMeasurements(config)
 
     cv2.namedWindow("Driver Monitoring", cv2.WINDOW_NORMAL)
 
@@ -42,7 +43,7 @@ def main():
             if face_result.success:
 
                 facial_features = feature_extractor.process_face(face_result)
-                metrics = FacialMeasurements.calculate_metrics(facial_features)
+                metrics = facial_measurements.calculate_metrics(facial_features)
                 
                 states = state_classifier.process_features(facial_features)
                 decision = decision_logic.determine_drowsiness(states)
