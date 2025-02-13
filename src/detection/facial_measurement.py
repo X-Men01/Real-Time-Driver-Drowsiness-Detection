@@ -1,7 +1,8 @@
 import numpy as np
 from typing import Dict, Tuple, NamedTuple
 from detection.feature_extraction import FacialFeatures
-
+import time
+from detection.config import Config
 
 class FacialMetrics(NamedTuple):
     """Container for facial measurements"""
@@ -9,24 +10,53 @@ class FacialMetrics(NamedTuple):
     left_ear: float
     right_ear: float
     mar: float
+    blink_count: int  
+    blink_rate: float 
+    yawning_count: int    
+    yawning_rate: float  
 
 
 class FacialMeasurements:
-    def calculate_metrics(facial_features: FacialFeatures) -> FacialMetrics:
+    
+    
+    def __init__(self , config: Config):
+       
+        self.EAR_THRESHOLD = config.EAR_THRESHOLD
+        self.YAWN_THRESHOLD = config.YAWN_THRESHOLD
+       
+        self.blink_total = 0
+        self.yawning_total = 0
+       
+        self.prev_ear_below_threshold = False
+        self.prev_mar_above_threshold = False  
+        
+        self.start_time = time.time() 
+    
+    
+    def calculate_metrics(self, facial_features: FacialFeatures) -> FacialMetrics:
         """Calculate all facial measurements from facial features"""
-        left_eye = FacialMeasurements.measure_eye(facial_features.ear_left_landmarks, True)
-        right_eye = FacialMeasurements.measure_eye(facial_features.ear_right_landmarks, False)
+        
+        left_eye = self.measure_eye(facial_features.ear_left_landmarks, True)
+        right_eye = self.measure_eye(facial_features.ear_right_landmarks, False)
         avg_eye = (left_eye + right_eye) / 2.0
-        mouth = FacialMeasurements.measure_mouth(facial_features.mar_mouth_landmarks)
+        mouth = self.measure_mouth(facial_features.mar_mouth_landmarks)
+        
+
+        blink_rate = self._update_blink_detection(avg_eye)
+        yawning_rate = self._update_yawn_detection(mouth)
 
         return FacialMetrics(
             avg_ear=avg_eye,
             left_ear=left_eye,
             right_ear=right_eye,
-            mar=mouth
+            mar=mouth,
+            blink_count=self.blink_total,
+            blink_rate=blink_rate,
+            yawning_count=self.yawning_total,
+            yawning_rate=yawning_rate
         )
 
-    def measure_eye(eye_landmarks: Dict[str, Tuple[int, int]], left_eye: bool) -> float:
+    def measure_eye(self, eye_landmarks: Dict[str, Tuple[int, int]], left_eye: bool) -> float:
         """Measure eye openness ratio"""
         if not eye_landmarks or len(eye_landmarks) != 6:
             return -1.0
@@ -60,7 +90,7 @@ class FacialMeasurements:
             print(str(e))
             return -1.0
 
-    def measure_mouth(mouth_landmarks: Dict[str, Tuple[int, int]]) -> float:
+    def measure_mouth(self, mouth_landmarks: Dict[str, Tuple[int, int]]) -> float:
         """Measure mouth opening ratio"""
         if not mouth_landmarks or len(mouth_landmarks) != 8:
             return -1.0
@@ -86,3 +116,39 @@ class FacialMeasurements:
         except Exception as e:
             print(str(e))
             return -1.0
+        
+        
+        
+    def _update_blink_detection(self, current_ear: float) -> float:
+ 
+        ear_below_threshold = current_ear < self.EAR_THRESHOLD
+
+        if self.prev_ear_below_threshold and not ear_below_threshold:
+            self.blink_total += 1
+
+        self.prev_ear_below_threshold = ear_below_threshold
+        
+        elapsed_time = time.time() - self.start_time
+        
+        if elapsed_time > 0:
+            blink_rate = self.blink_total / elapsed_time
+            return round(blink_rate, 1)
+        
+        return 0.0
+    
+    
+    def _update_yawn_detection(self, current_mar: float) -> float:
+        """Update yawning detection using mouth aspect ratio and compute yawning rate."""
+        mar_above_threshold = current_mar > self.YAWN_THRESHOLD
+
+        if self.prev_mar_above_threshold and not mar_above_threshold:
+            self.yawning_total += 1
+
+        self.prev_mar_above_threshold = mar_above_threshold
+
+        elapsed_time = time.time() - self.start_time
+        if elapsed_time > 0:
+            yawning_rate = self.yawning_total / elapsed_time
+            return round(yawning_rate, 1)
+        
+        return 0.0
