@@ -10,13 +10,13 @@ from config import Config
 from visualization.plot_results import display_frame
 from tracker import Tracker
 from facial_measurement import FacialMeasurements
+from calibration import CalibrationPhase
 
 
 def main():
 
     config = Config()
     config.validate()
-
     camera = CameraModule(config)
     face_detector = FaceDetection(config)
     feature_extractor = FeatureExtraction(config)
@@ -27,6 +27,13 @@ def main():
 
     tracker = Tracker(config)
     facial_measurements = FacialMeasurements(config)
+    
+    
+      # Run the calibration phase using CNN confidence outputs
+    calibration_phase = CalibrationPhase(
+        config, camera, face_detector, feature_extractor, facial_measurements, state_classifier
+    )
+    calibration_info = calibration_phase.run(required_frame_count=10)  # each stage runs for 5 seconds
 
     cv2.namedWindow("Driver Monitoring", cv2.WINDOW_NORMAL)
 
@@ -39,7 +46,8 @@ def main():
                 continue
 
             face_result = face_detector.detect_face(frame) 
-
+            
+            
             if face_result.success:
 
                 facial_features = feature_extractor.process_face(face_result)
