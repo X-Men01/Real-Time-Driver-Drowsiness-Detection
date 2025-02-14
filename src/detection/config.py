@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict
 import torch
 import logging
-@dataclass(frozen=True)
+# @dataclass(frozen=True)
 class Config:
     """
     Central configuration for drowsiness detection system.
