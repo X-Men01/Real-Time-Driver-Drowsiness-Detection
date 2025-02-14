@@ -51,7 +51,7 @@ import cv2
 import numpy as np
 from typing import Tuple
 
-def draw_status_overlay(frame: np.ndarray, states, decision, aggregated_state, aggregated_conf) -> np.ndarray:
+def draw_status_overlay(frame: np.ndarray, states, decision, aggregated_state, aggregated_conf, ratios) -> np.ndarray:
     """Draw status information on the video frame"""
     
     # Create a semi-transparent overlay for text background
@@ -59,7 +59,7 @@ def draw_status_overlay(frame: np.ndarray, states, decision, aggregated_state, a
     output = frame.copy()
     
     # Status box dimensions
-    box_height = 180
+    box_height = 180 * 2
     box_width = 400
     padding = 10
     
@@ -86,10 +86,17 @@ def draw_status_overlay(frame: np.ndarray, states, decision, aggregated_state, a
         f"Drowsiness: {'DROWSY!' if aggregated_state else 'Normal'} ({confidence:.2f})",
         f"Eyes: {'Closed' if decision.eye_status else 'Open'} ({(states.confidence_left+states.confidence_right)/2:.2f})",
         f"Mouth: {'Yawning' if decision.yawn_status else 'Normal'} ({states.confidence_mouth:.2f})",
-        f"Head Position: {decision.head_pose_status}"
-    ]
-    
+        f"Head Position: {decision.head_pose_status}",
    
+        f"EAR: {ratios.avg_ear:.2f}  MAR: {ratios.mar:.2f}",
+        f"Blinks: {ratios.blink_count}",
+        f"Blink Rate: {ratios.blink_rate:.1f}  blinks per second",
+        f"Yawning Count: {ratios.yawning_count}",
+        f"Yawning Rate: {ratios.yawning_rate:.1f} yawns per second",
+        
+    ]
+   
+    
     
     # Draw status texts
     y_position = padding + 30
@@ -135,13 +142,13 @@ def draw_feature_windows(frame: np.ndarray, facial_features) -> np.ndarray:
 
     return frame
 
-def display_frame(frame: np.ndarray, face_region, facial_features, states, decision, aggregated_state,aggregated_conf, flag_normal_state) -> np.ndarray:
+def display_frame(frame: np.ndarray, face_region, facial_features, states, decision, aggregated_state,aggregated_conf, flag_normal_state , ratios) -> np.ndarray:
     """Combine all visualization elements on the frame"""
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     frame = cv2.flip(frame, 1)
     if flag_normal_state:
         # Draw status overlay
-        output = draw_status_overlay(frame, states, decision,aggregated_state,aggregated_conf )
+        output = draw_status_overlay(frame, states, decision,aggregated_state,aggregated_conf ,ratios)
         
         # Draw feature windows
         if facial_features.success:
