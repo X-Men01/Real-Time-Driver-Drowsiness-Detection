@@ -54,7 +54,7 @@ class Config:
     
     # Facial measurement thresholds
     EAR_THRESHOLD: float = 0.18
-    YAWN_THRESHOLD: float = 0.7
+    MAR_THRESHOLD: float = 0.7
    
     # Need to add more validation for the thresholds and other parameters
    
