@@ -11,6 +11,7 @@ from visualization.plot_results import display_frame
 from tracker import Tracker
 from facial_measurement import FacialMeasurements
 from calibration import CalibrationPhase
+from visualization.realtime_plotter import RealTimePlotter
 
 
 def main():
@@ -29,12 +30,13 @@ def main():
     facial_measurements = FacialMeasurements(config)
     
     
-      # Run the calibration phase using CNN confidence outputs
+     
     calibration_phase = CalibrationPhase(
         config, camera, face_detector, feature_extractor, facial_measurements, state_classifier
     )
-    calibration_info = calibration_phase.run(required_frame_count=10)  # each stage runs for 5 seconds
+    calibration_info = calibration_phase.run(required_frame_count=10)  
 
+   
     cv2.namedWindow("Driver Monitoring", cv2.WINDOW_NORMAL)
 
     try:
@@ -60,6 +62,7 @@ def main():
 
                 drowsy_state = tracker.is_drowsy()
                 drowsy_conf = tracker.aggregated_confidence()
+
 
                 if drowsy_state:
                     alarm_system.trigger_alarm("Drowsiness")
