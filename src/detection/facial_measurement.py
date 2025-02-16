@@ -22,7 +22,7 @@ class FacialMeasurements:
     def __init__(self , config: Config):
        
         self.EAR_THRESHOLD = config.EAR_THRESHOLD
-        self.YAWN_THRESHOLD = config.YAWN_THRESHOLD
+        self.MAR_THRESHOLD = config.MAR_THRESHOLD
        
         self.blink_total = 0
         self.yawning_total = 0
@@ -139,7 +139,7 @@ class FacialMeasurements:
     
     def _update_yawn_detection(self, current_mar: float) -> float:
         """Update yawning detection using mouth aspect ratio and compute yawning rate."""
-        mar_above_threshold = current_mar > self.YAWN_THRESHOLD
+        mar_above_threshold = current_mar > self.MAR_THRESHOLD
 
         if self.prev_mar_above_threshold and not mar_above_threshold:
             self.yawning_total += 1
