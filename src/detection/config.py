@@ -14,6 +14,7 @@ class Config:
     CAMERA_INDEX: int = 1
     FRAME_WIDTH: int = 1280
     FRAME_HEIGHT: int = 720
+    SAVE_VIDEO: bool = True
    
     
     # Face Detection settings
