@@ -51,7 +51,7 @@ import cv2
 import numpy as np
 from typing import Tuple
 
-def draw_status_overlay(frame: np.ndarray, states, decision, aggregated_state, aggregated_conf, ratios) -> np.ndarray:
+def draw_status_overlay(frame: np.ndarray, states, decision, alarm_active, drowsy_conf, ratios,alarm_type) -> np.ndarray:
     """Draw status information on the video frame"""
     
     # Create a semi-transparent overlay for text background
@@ -77,14 +77,17 @@ def draw_status_overlay(frame: np.ndarray, states, decision, aggregated_state, a
     thickness = 2
     text_color = (255, 255, 255)  # White
     
-    if aggregated_state:
-        confidence = aggregated_conf
+    if alarm_active:
+        confidence = drowsy_conf
     else:
         confidence = decision.confidence
     # Status texts
+    class_names_eye = {0: "Close_Eye", 1: "Open_Eye"}
     texts = [
-        f"Drowsiness: {'DROWSY!' if aggregated_state else 'Normal'} ({confidence:.2f})",
+        f"Drowsiness: {'DROWSY!' if alarm_active else 'Normal'} ({confidence:.2f})",
         f"Eyes: {'Closed' if decision.eye_status else 'Open'} ({(states.confidence_left+states.confidence_right)/2:.2f})",
+        f"Left Eye: {class_names_eye[states.left_eye_state]} ({states.confidence_left:.2f}) ",
+        f"Right Eye: {class_names_eye[states.right_eye_state]} ({states.confidence_right:.2f}) ",
         f"Mouth: {'Yawning' if decision.yawn_status else 'Normal'} ({states.confidence_mouth:.2f})",
         f"Head Position: {decision.head_pose_status}",
    
@@ -106,9 +109,22 @@ def draw_status_overlay(frame: np.ndarray, states, decision, aggregated_state, a
         y_position += 30
     
     # Draw alert indicator
-    if aggregated_state:
+    if alarm_active:
+        if alarm_type == "Drowsiness":
+            text = "Drowsy"
+            color = (0, 0, 255)
+        else:
+            text = "Distracted"
+            color = (0, 255, 255)
+        (text_width, text_height), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+        
+     
+        x_position = output.shape[1] - text_width - 20
+        
+        cv2.putText(output, text, (x_position, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        
         cv2.rectangle(output, (0, 0), (frame.shape[1], frame.shape[0]), 
-                     (0, 0, 255), 10)  # Red border for alert
+                     color, 10)  
     
     return output
 
@@ -142,21 +158,39 @@ def draw_feature_windows(frame: np.ndarray, facial_features) -> np.ndarray:
 
     return frame
 
-def display_frame(frame: np.ndarray, face_region, facial_features, states, decision, aggregated_state,aggregated_conf, flag_normal_state , ratios) -> np.ndarray:
+
+def display_frame(
+    frame: np.ndarray,
+    face_region,
+    facial_features,
+    states,
+    decision,
+    alarm_active,
+    alarm_type,
+    drowsy_conf,
+    flag_normal_state,
+    ratios,
+) -> np.ndarray:
     """Combine all visualization elements on the frame"""
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     frame = cv2.flip(frame, 1)
     if flag_normal_state:
         # Draw status overlay
-        output = draw_status_overlay(frame, states, decision,aggregated_state,aggregated_conf ,ratios)
-        
+        output = draw_status_overlay(frame, states, decision,alarm_active,drowsy_conf ,ratios,alarm_type)
+
         # Draw feature windows
         if facial_features.success:
             output = draw_feature_windows(output, facial_features)
     else:
         output = frame
-        cv2.putText(output,"Face not detected",(50, 50),cv2.FONT_HERSHEY_SIMPLEX,1,(0, 0, 255),2,)
+        # Get the size of the text
+        text = "Face not detected"
+        (text_width, text_height), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+
+        # Calculate x position to align text to the right with some padding (e.g., 20 pixels)
+        x_position = output.shape[1] - text_width - 20
+
+        cv2.putText(output, text, (x_position, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
         cv2.rectangle(output, (0, 0), (frame.shape[1], frame.shape[0]), (0, 0, 255), 10)  # Red border for alert
-        
-    
+
     return output
