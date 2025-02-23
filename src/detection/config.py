@@ -11,7 +11,7 @@ class Config:
     Using frozen=True makes the config immutable after creation.
     """
     # Camera settings
-    CAMERA_INDEX: int = 1
+    CAMERA_INDEX: int = "/Users/ahmedalkhulayfi/Downloads/benchmark/videos/drowsy/P1042756_720.mp4"
     FRAME_WIDTH: int = 1280
     FRAME_HEIGHT: int = 720
     SAVE_VIDEO: bool = True
@@ -32,7 +32,7 @@ class Config:
     
     # Model settings
     MODEL_DIR: Path = Path("../../src/models")
-    EYE_MODEL_PATH: Path =  MODEL_DIR / "eye_state_model_V2.pt"
+    EYE_MODEL_PATH: Path =  MODEL_DIR / "eyes_model_gray.pt"
     MOUTH_MODEL_PATH: Path = MODEL_DIR / "mouth_state_model_V2.pt"
     DEVICE: str =  "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     
@@ -47,9 +47,10 @@ class Config:
     DROWSINESS_ALARM_FILE: Path = Path("../../assets/drowsiness_alarm.mp3")
     DISTRACTION_ALARM_FILE: Path = Path("../../assets/distraction_alarm.mp3")
     FACE_NOT_DETECTED_ALARM_FILE: Path = Path("../../assets/face_not_detected.mp3")
+    
     # Temporal analysis settings
-    WINDOW_SIZE_DROWSINESS: int = 70
-    DROWSY_THRESHOLD: float = 0.6
+    WINDOW_SIZE_DROWSINESS: int = 60
+    DROWSY_THRESHOLD: float = 0.70
     WINDOW_SIZE_HEAD_POSE: int = 100
     HEAD_POSE_NON_FORWARD_THRESHOLD: float = 0.8
     
