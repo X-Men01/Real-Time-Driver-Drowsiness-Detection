@@ -1,0 +1,21 @@
+{
+    "sequence_length": 2,
+    "num_features": 6,
+    "feature_names": [
+        "ear_left",
+        "ear_right",
+        "mar",
+        "pitch",
+        "yaw",
+        "roll"
+    ],
+    "creation_date": "2025-02-22 21:24:14.940666",
+    "total_sequences": 2,
+    "drowsy_count": 1,
+    "not_drowsy_count": 1,
+    "features_shape": [
+        2,
+        2,
+        6
+    ]
+}

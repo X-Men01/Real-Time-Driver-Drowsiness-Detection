@@ -1,16 +1,16 @@
 import cv2
 
-from camera_module import CameraModule
-from face_detection import FaceDetection
-from feature_extraction import FeatureExtraction
-from state_classification import StateClassification
-from decision_logic import DecisionLogic
-from alarm_system import AlarmSystem
-from config import Config
+from detection.camera_module import CameraModule
+from detection.face_detection import FaceDetection
+from detection.feature_extraction import FeatureExtraction
+from detection.state_classification import StateClassification
+from detection.decision_logic import DecisionLogic
+from detection.alarm_system import AlarmSystem
+from detection.config import Config
 from visualization.plot_results import display_frame
-from tracker import Tracker
-from facial_measurement import FacialMeasurements
-from calibration import CalibrationPhase
+from detection.tracker import Tracker
+from detection.facial_measurement import FacialMeasurements
+from detection.calibration import CalibrationPhase
 from visualization.realtime_plotter import RealTimePlotter
 
 
