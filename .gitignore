@@ -13,14 +13,17 @@ __pycache__/
 */.DS_Store
 *.DS_Store
 *.pyc
-
 # Ignore other common files
 *.pyo
 *.pyd
 *.db
 *.sqlite3
-src/.DS_Store
+src/.DS_Store 
 .DS_Store
 notebooks/best_model.pth
 .DS_Store
 src/detection/output.mp4
+prompts.txt
+"src/.DS_Store"
+.cursorrules
+notebooks/playground.ipynb 
