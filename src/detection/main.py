@@ -66,7 +66,6 @@ def main():
 
                 drowsy_state = tracker.is_drowsy()
                 drowsy_conf = tracker.aggregated_confidence()
-
                 if drowsy_state:
                     alarm_system.trigger_alarm("Drowsiness")
                     print("\033[95mDrowsiness detected!\033[0m")
@@ -92,7 +91,7 @@ def main():
 
             else:
                 alarm_system.trigger_alarm("Face_not_detected")
-                output_frame = display_frame(frame,face_result,facial_features,states,decision,alarm_active,drowsy_conf,False,metrics)
+                output_frame = display_frame(frame,face_result,facial_features,states,decision,alarm_active,None,drowsy_conf,False,metrics)
 
             cv2.imshow("Driver Monitoring", output_frame)
             if out is not None:
