@@ -1,6 +1,6 @@
 from collections import deque
 from detection.decision_logic import DecisionResult
-from config import Config
+from detection.config import Config
 
 
 class Tracker:
