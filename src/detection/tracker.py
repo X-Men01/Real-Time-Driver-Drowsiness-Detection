@@ -21,7 +21,7 @@ class Tracker:
 
     def is_drowsy(self) -> bool:
 
-        if not self.drowsy_buffer:
+        if not self.drowsy_buffer or len(self.drowsy_buffer) < self.drowsy_buffer.maxlen:
             return False
 
         
@@ -43,7 +43,7 @@ class Tracker:
        
     def is_head_pose_alert(self) -> bool:
         
-        if not self.head_pose_buffer:
+        if not self.head_pose_buffer or len(self.head_pose_buffer) < self.head_pose_buffer.maxlen:
             return False
         
         non_forward_count = sum(1 for status in self.head_pose_buffer if status != "Forward")
