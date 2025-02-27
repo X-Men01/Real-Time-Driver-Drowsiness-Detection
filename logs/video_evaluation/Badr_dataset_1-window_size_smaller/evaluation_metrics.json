@@ -1,0 +1,10 @@
+{
+    "total_videos": 42,
+    "successful_videos": 42,
+    "accuracy": 0.9285714285714286,
+    "drowsy_detection_rate": 2.619047619047619,
+    "false_positive_rate": 0.14285714285714285,
+    "average_detection_latency": 4.998412698412698,
+    "multiple_detection_rate": 0.9523809523809523,
+    "face_detection_failure_rate": 0.005709301403536595
+}

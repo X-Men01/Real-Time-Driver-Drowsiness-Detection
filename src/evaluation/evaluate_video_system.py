@@ -11,6 +11,7 @@ from detection.feature_extraction import FeatureExtraction
 from detection.state_classification import StateClassification
 from detection.decision_logic import DecisionLogic
 from detection.config import Config
+import json
 
 class VideoSystemEvaluator:
     def __init__(self,
@@ -85,15 +86,17 @@ class VideoSystemEvaluator:
                     self.tracker.add_decision(decision)
                     
                     # Use tracker's built-in temporal analysis
-                    is_drowsy = self.tracker.is_drowsy()
                     confidence = self.tracker.aggregated_confidence()
+                 
+                    is_drowsy = self.tracker.is_drowsy()
+                    
                     
                     # Record drowsy detection (tracker will clear its buffer after detection)
                     if is_drowsy:
                         analysis['drowsy_detections'].append({
                             'frame': analysis['frames_processed'],
                             'time': analysis['frames_processed'] / fps,
-                            'confidence': confidence
+                            'confidence': confidence,
                         })
                         analysis['detection_count'] += 1
 
@@ -136,31 +139,75 @@ class VideoSystemEvaluator:
         
         return analysis
 
-    def evaluate_dataset(self, data_dir: Path, writer: SummaryWriter, log_dir: Path) -> Dict:
+    def evaluate_dataset(self, data_dir: Path, writer: SummaryWriter, log_dir: Path, config: Config) -> Dict:
         """Evaluate the complete system on a video dataset"""
         drowsy_dir = data_dir / "drowsy"
         not_drowsy_dir = data_dir / "not_drowsy"
         
+        # Save configuration settings
+        config_dict = {
+            # Temporal analysis settings
+            'WINDOW_SIZE_DROWSINESS': config.WINDOW_SIZE_DROWSINESS,
+            'DROWSY_THRESHOLD': config.DROWSY_THRESHOLD,
+            'WINDOW_SIZE_HEAD_POSE': config.WINDOW_SIZE_HEAD_POSE,
+            'HEAD_POSE_NON_FORWARD_THRESHOLD': config.HEAD_POSE_NON_FORWARD_THRESHOLD,
+            
+            # Classification thresholds
+            'EYE_CONFIDENCE_THRESHOLD': config.EYE_CONFIDENCE_THRESHOLD,
+            'MOUTH_CONFIDENCE_THRESHOLD': config.MOUTH_CONFIDENCE_THRESHOLD,
+            'MIN_CONFIDENCE': config.MIN_CONFIDENCE,
+            'HEAD_POSE_THRESHOLD': config.HEAD_POSE_THRESHOLD,
+            
+            # Face Detection settings
+            'FACE_DETECTION_CONFIDENCE': config.FACE_DETECTION_CONFIDENCE,
+            'FACE_PADDING_PERCENT': config.FACE_PADDING_PERCENT,
+            
+            # Feature Extraction settings
+            'MIN_DETECTION_CONF': config.MIN_DETECTION_CONF,
+            'MIN_TRACKING_CONF': config.MIN_TRACKING_CONF,
+            
+            # Facial measurement thresholds
+            'EAR_THRESHOLD': config.EAR_THRESHOLD,
+            'MAR_THRESHOLD': config.MAR_THRESHOLD,
+        }
+        
+        # Save config to JSON
+        config_path = log_dir / "evaluation_config.json"
+        with open(config_path, 'w') as f:
+            json.dump(config_dict, f, indent=4)
+        
         video_results = []
         
         # Process drowsy videos
-        for video_path in drowsy_dir.glob("*.mp4"):  # Adjust extension as needed
+        for video_path in drowsy_dir.glob("*.mp4"):
             analysis = self.process_video(video_path, ground_truth_label=1)
             video_results.append(analysis)
         
         # Process not drowsy videos
-        for video_path in not_drowsy_dir.glob("*.mp4"):  # Adjust extension as needed
+        for video_path in not_drowsy_dir.glob("*.mp4"):
             analysis = self.process_video(video_path, ground_truth_label=0)
             video_results.append(analysis)
         
         # Convert to DataFrame and calculate metrics
         results_df = pd.DataFrame(video_results)
         
-        # Calculate and log metrics
+        # Calculate metrics
         metrics = self._calculate_metrics(results_df)
         
-        # Save results
+        # Save results and metrics
         results_df.to_csv(log_dir / "video_evaluation_results.csv")
+        
+        # Save metrics to JSON with proper formatting
+        metrics_path = log_dir / "evaluation_metrics.json"
+        with open(metrics_path, 'w') as f:
+            json.dump(metrics, f, indent=4)
+        
+        # Print metrics to console
+        print("\nEvaluation Metrics:")
+        print("-" * 50)
+        for metric_name, value in metrics.items():
+            print(f"{metric_name}: {value:.4f}")
+        print("-" * 50)
         
         # Log to tensorboard
         for metric_name, value in metrics.items():
@@ -184,9 +231,11 @@ class VideoSystemEvaluator:
                 if len(successful_videos) > 0 else 0,
             'drowsy_detection_rate': (drowsy_videos['detection_count'].sum() / len(drowsy_videos))
                 if len(drowsy_videos) > 0 else 0,
-            'false_positive_rate': (alert_videos['face_detection_failures'].sum() / len(alert_videos))
+            'false_positive_rate': (alert_videos['detection_count'] > 0).sum() / len(alert_videos)
                 if len(alert_videos) > 0 else 0,
             'average_detection_latency': drowsy_videos['first_detection_time'].mean()
+                if len(drowsy_videos) > 0 else 0,
+            'multiple_detection_rate': (drowsy_videos['multiple_detections'].sum() / len(drowsy_videos))
                 if len(drowsy_videos) > 0 else 0,
             'face_detection_failure_rate': (successful_videos['face_detection_failures'].sum() / 
                 successful_videos['frames_processed'].sum())
@@ -215,15 +264,16 @@ def main():
     )
     
     # Setup logging
-    log_dir = Path("../../logs/video_evaluation/test")
+    log_dir = Path("../../logs/video_evaluation/Badr_dataset_1-window_size_smaller")
     log_dir.mkdir(parents=True, exist_ok=True)
     writer = SummaryWriter(log_dir)
     
     # Run evaluation
     results = evaluator.evaluate_dataset(
-        data_dir=Path("/Users/ahmedalkhulayfi/Downloads/video data"),  # Update with your video dataset path
+        data_dir=Path("/Users/ahmedalkhulayfi/Downloads/benchmark/badr-01"),
         writer=writer,
-        log_dir=log_dir
+        log_dir=log_dir,
+        config=config  # Pass config to evaluate_dataset
     )
     
     # Print results

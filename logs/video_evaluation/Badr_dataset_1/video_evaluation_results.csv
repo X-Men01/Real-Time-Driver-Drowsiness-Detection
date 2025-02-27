@@ -1,0 +1,43 @@
+,video_path,true_label,frames_processed,drowsy_detections,detection_count,face_detection_failures,temporal_decisions,success,predicted_label,prediction_correct,first_detection_frame,first_detection_time,max_confidence,multiple_detections,time_between_detections
+0,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/7.mp4,1,317,"[{'frame': 112, 'time': 3.7333333333333334, 'confidence': 0.9892502095018114}]",1,0,[],True,1,True,112.0,3.7333333333333334,0.9892502095018114,False,
+1,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/6.mp4,1,244,"[{'frame': 107, 'time': 3.566666666666667, 'confidence': 0.9413635036775044}]",1,0,[],True,1,True,107.0,3.566666666666667,0.9413635036775044,False,
+2,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/4.mp4,1,289,"[{'frame': 97, 'time': 3.2333333333333334, 'confidence': 0.9550302588513919}]",1,0,[],True,1,True,97.0,3.2333333333333334,0.9550302588513919,False,
+3,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/5.mp4,1,301,"[{'frame': 219, 'time': 7.3, 'confidence': 0.9774602937272616}]",1,0,[],True,1,True,219.0,7.3,0.9774602937272616,False,
+4,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/1.mp4,1,328,"[{'frame': 163, 'time': 5.433333333333334, 'confidence': 0.9740329770956719}, {'frame': 233, 'time': 7.766666666666667, 'confidence': 0.9931387094940458}]",2,0,[],True,1,True,163.0,5.433333333333334,0.9931387094940458,True,[2.333333333333333]
+5,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/2.mp4,1,311,"[{'frame': 113, 'time': 3.7666666666666666, 'confidence': 0.9696370195065226}]",1,28,[],True,1,True,113.0,3.7666666666666666,0.9696370195065226,False,
+6,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/3.mp4,1,323,"[{'frame': 137, 'time': 4.566666666666666, 'confidence': 0.9745459916336195}]",1,0,[],True,1,True,137.0,4.566666666666666,0.9745459916336195,False,
+7,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/21.mp4,1,314,"[{'frame': 188, 'time': 6.266666666666667, 'confidence': 0.9584435743093491}]",1,0,[],True,1,True,188.0,6.266666666666667,0.9584435743093491,False,
+8,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/20.mp4,1,402,"[{'frame': 288, 'time': 9.6, 'confidence': 0.8696159073710441}, {'frame': 358, 'time': 11.933333333333334, 'confidence': 0.9601456468445914}]",2,0,[],True,1,True,288.0,9.6,0.9601456468445914,True,[2.333333333333334]
+9,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/18.mp4,1,297,"[{'frame': 184, 'time': 6.133333333333334, 'confidence': 0.9680384635925293}, {'frame': 254, 'time': 8.466666666666667, 'confidence': 0.9920981924874441}]",2,0,[],True,1,True,184.0,6.133333333333334,0.9920981924874441,True,[2.333333333333333]
+10,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/19.mp4,1,352,"[{'frame': 170, 'time': 5.666666666666667, 'confidence': 0.954028958593096}]",1,0,[],True,1,True,170.0,5.666666666666667,0.954028958593096,False,
+11,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/17.mp4,1,384,"[{'frame': 141, 'time': 4.7, 'confidence': 0.9011035687157086}, {'frame': 211, 'time': 7.033333333333333, 'confidence': 0.9706119684662138}]",2,0,[],True,1,True,141.0,4.7,0.9706119684662138,True,[2.333333333333333]
+12,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/16.mp4,1,378,"[{'frame': 250, 'time': 8.333333333333334, 'confidence': 0.9569852103080069}]",1,0,[],True,1,True,250.0,8.333333333333334,0.9569852103080069,False,
+13,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/14.mp4,1,368,[],0,0,[],True,0,False,,,,,
+14,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/15.mp4,1,327,"[{'frame': 172, 'time': 5.733333333333333, 'confidence': 0.956416218834264}]",1,0,[],True,1,True,172.0,5.733333333333333,0.956416218834264,False,
+15,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/11.mp4,1,358,"[{'frame': 171, 'time': 5.7, 'confidence': 0.9550182572432927}]",1,0,[],True,1,True,171.0,5.7,0.9550182572432927,False,
+16,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/10.mp4,1,274,"[{'frame': 114, 'time': 3.8, 'confidence': 0.9873650418860572}, {'frame': 184, 'time': 6.133333333333334, 'confidence': 0.963000580242702}]",2,0,[],True,1,True,114.0,3.8,0.9873650418860572,True,[2.333333333333334]
+17,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/12.mp4,1,398,"[{'frame': 156, 'time': 5.2, 'confidence': 0.969042399099895}, {'frame': 226, 'time': 7.533333333333333, 'confidence': 0.9800844901800155}]",2,4,[],True,1,True,156.0,5.2,0.9800844901800155,True,[2.333333333333333]
+18,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/13.mp4,1,399,"[{'frame': 220, 'time': 7.333333333333333, 'confidence': 0.9765015904818262}, {'frame': 290, 'time': 9.666666666666666, 'confidence': 0.9988187636647906}]",2,0,[],True,1,True,220.0,7.333333333333333,0.9988187636647906,True,[2.333333333333333]
+19,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/8.mp4,1,467,"[{'frame': 72, 'time': 2.4, 'confidence': 0.9798315901841436}]",1,8,[],True,1,True,72.0,2.4,0.9798315901841436,False,
+20,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/drowsy/9.mp4,1,242,"[{'frame': 138, 'time': 4.6, 'confidence': 0.9755043721624783}, {'frame': 208, 'time': 6.933333333333334, 'confidence': 0.9451606181263924}]",2,0,[],True,1,True,138.0,4.6,0.9755043721624783,True,[2.333333333333334]
+21,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/7.mp4,0,204,[],0,0,[],True,0,True,,,,,
+22,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/6.mp4,0,332,[],0,1,[],True,0,True,,,,,
+23,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/4.mp4,0,283,[],0,0,[],True,0,True,,,,,
+24,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/5.mp4,0,202,[],0,2,[],True,0,True,,,,,
+25,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/1.mp4,0,305,[],0,6,[],True,0,True,,,,,
+26,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/2.mp4,0,298,[],0,3,[],True,0,True,,,,,
+27,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/3.mp4,0,270,[],0,0,[],True,0,True,,,,,
+28,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/21.mp4,0,286,[],0,0,[],True,0,True,,,,,
+29,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/20.mp4,0,246,[],0,0,[],True,0,True,,,,,
+30,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/18.mp4,0,352,[],0,0,[],True,0,True,,,,,
+31,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/19.mp4,0,337,[],0,0,[],True,0,True,,,,,
+32,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/17.mp4,0,269,[],0,0,[],True,0,True,,,,,
+33,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/16.mp4,0,280,[],0,15,[],True,0,True,,,,,
+34,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/14.mp4,0,276,[],0,0,[],True,0,True,,,,,
+35,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/15.mp4,0,298,[],0,1,[],True,0,True,,,,,
+36,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/11.mp4,0,246,[],0,0,[],True,0,True,,,,,
+37,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/10.mp4,0,108,[],0,0,[],True,0,True,,,,,
+38,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/12.mp4,0,219,[],0,1,[],True,0,True,,,,,
+39,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/13.mp4,0,329,[],0,3,[],True,0,True,,,,,
+40,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/8.mp4,0,298,[],0,0,[],True,0,True,,,,,
+41,/Users/ahmedalkhulayfi/Downloads/benchmark/Badr-01/not_drowsy/9.mp4,0,100,[],0,0,[],True,0,True,,,,,
