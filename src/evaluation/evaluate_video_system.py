@@ -170,6 +170,7 @@ class VideoSystemEvaluator:
             'EAR_THRESHOLD': config.EAR_THRESHOLD,
             'MAR_THRESHOLD': config.MAR_THRESHOLD,
         }
+        video_formats = ["*.mp4", "*.avi", "*.mov", "*.mkv"]
         
         # Save config to JSON
         config_path = log_dir / "evaluation_config.json"
@@ -178,15 +179,17 @@ class VideoSystemEvaluator:
         
         video_results = []
         
-        # Process drowsy videos
-        for video_path in drowsy_dir.glob("*.mp4"):
-            analysis = self.process_video(video_path, ground_truth_label=1)
-            video_results.append(analysis)
+        # Process drowsy videos (both .mp4 and .avi)
+        for video_format in video_formats:
+            for video_path in drowsy_dir.glob(video_format):
+                analysis = self.process_video(video_path, ground_truth_label=1)
+                video_results.append(analysis)
         
-        # Process not drowsy videos
-        for video_path in not_drowsy_dir.glob("*.mp4"):
-            analysis = self.process_video(video_path, ground_truth_label=0)
-            video_results.append(analysis)
+        # Process not drowsy videos (both .mp4 and .avi)
+        for video_format in video_formats:
+            for video_path in not_drowsy_dir.glob(video_format):
+                analysis = self.process_video(video_path, ground_truth_label=0)
+                video_results.append(analysis)
         
         # Convert to DataFrame and calculate metrics
         results_df = pd.DataFrame(video_results)
