@@ -247,44 +247,70 @@ class VideoSystemEvaluator:
         return metrics
 
 def main():
-    config = Config()
-    config.validate()
+    # Define parameter ranges to test
+    window_sizes = [30, 50, 70, 90, 110]  # Different window sizes to test
+    drowsy_thresholds = [0.4, 0.5, 0.6, 0.7, 0.8]  # Different drowsy thresholds
     
-    # Initialize components
-    face_detector = FaceDetection(config)
-    feature_extractor = FeatureExtraction(config)
-    state_classifier = StateClassification(config)
-    decision_logic = DecisionLogic(config)
-    tracker = Tracker(config)
+    # Store results for all configurations
+    all_results = []
     
-    # Initialize evaluator
-    evaluator = VideoSystemEvaluator(
-        face_detector=face_detector,
-        feature_extractor=feature_extractor,
-        state_classifier=state_classifier,
-        decision_logic=decision_logic,
-        tracker=tracker
-    )
+    for window_size in window_sizes:
+        for drowsy_threshold in drowsy_thresholds:
+            print(f"\nTesting configuration: Window Size = {window_size}, Threshold = {drowsy_threshold}")
+            
+            # Create new config with current parameters
+            config = Config()
+            config.WINDOW_SIZE_DROWSINESS = window_size
+            config.DROWSY_THRESHOLD = drowsy_threshold
+            config.validate()
+            
+            # Initialize components with current config
+            face_detector = FaceDetection(config)
+            feature_extractor = FeatureExtraction(config)
+            state_classifier = StateClassification(config)
+            decision_logic = DecisionLogic(config)
+            tracker = Tracker(config)
+            
+            # Initialize evaluator
+            evaluator = VideoSystemEvaluator(
+                face_detector=face_detector,
+                feature_extractor=feature_extractor,
+                state_classifier=state_classifier,
+                decision_logic=decision_logic,
+                tracker=tracker
+            )
+            
+            # Setup logging directory for this configuration
+            log_dir = Path(f"../../logs/video_evaluation/window_{window_size}_threshold_{int(drowsy_threshold*100)}")
+            log_dir.mkdir(parents=True, exist_ok=True)
+            writer = SummaryWriter(log_dir)
+            
+            # Run evaluation
+            results = evaluator.evaluate_dataset(
+                data_dir=Path("/Users/ahmedalkhulayfi/Downloads/benchmark/videos"),
+                writer=writer,
+                log_dir=log_dir,
+                config=config
+            )
+            
+            # Store results with configuration parameters
+            results['metrics']['window_size'] = window_size
+            results['metrics']['drowsy_threshold'] = drowsy_threshold
+            all_results.append(results['metrics'])
+            
+            writer.close()
     
-    # Setup logging
-    log_dir = Path("../../logs/video_evaluation/Badr_dataset_1-window_size_smaller")
-    log_dir.mkdir(parents=True, exist_ok=True)
-    writer = SummaryWriter(log_dir)
+    # Create summary DataFrame and save to CSV
+    summary_df = pd.DataFrame(all_results)
+    summary_path = Path("../../logs/video_evaluation/parameter_sweep_summary.csv")
+    summary_df.to_csv(summary_path, index=False)
     
-    # Run evaluation
-    results = evaluator.evaluate_dataset(
-        data_dir=Path("/Users/ahmedalkhulayfi/Downloads/benchmark/badr-01"),
-        writer=writer,
-        log_dir=log_dir,
-        config=config  # Pass config to evaluate_dataset
-    )
-    
-    # Print results
-    print("\nEvaluation Results:")
-    for metric_name, value in results['metrics'].items():
-        print(f"{metric_name}: {value:.4f}")
-    
-    writer.close()
+    # Find best configuration based on accuracy
+    best_config = max(all_results, key=lambda x: x['accuracy'])
+    print("\nBest Configuration:")
+    print(f"Window Size: {best_config['window_size']}")
+    print(f"Drowsy Threshold: {best_config['drowsy_threshold']}")
+    print(f"Accuracy: {best_config['accuracy']:.4f}")
 
 if __name__ == "__main__":
     main() 
