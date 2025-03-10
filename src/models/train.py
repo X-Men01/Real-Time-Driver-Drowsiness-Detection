@@ -291,7 +291,7 @@ def training(
         "test_dataset": val_dataloader.dataset,
         
     }
-    print(hparams)
+    # print(hparams)
     writer.add_text("hyperparameters", str(hparams))
    
     best_acc = 0.0
@@ -337,7 +337,7 @@ def training(
                 f"Train Acc: {train_acc:.4f} | "
                 f"Val Loss: {val_loss:.4f} | "
                 f"Val Acc: {val_acc:.4f} | "
-                f"LR: {current_lr:.6f}"
+                f"LR: {current_lr:.6f}\033[00m"
             )
             
            
@@ -348,13 +348,13 @@ def training(
                 patience_counter = 0
                 checkpoint = {'model_state_dict': model.state_dict(),'best_acc': best_acc,}
                 torch.save(checkpoint, checkpoint_path)
-                print(f"\033[32m Saved best model with accuracy: {best_acc:.4f}")
+                print(f"\033[32m Saved best model with accuracy: {best_acc:.4f}\033[00m")
             else:
                 patience_counter += 1
             
             # Early stopping check
             if patience_counter >= early_stopping_patience:
-                print(f"\033[91m\nEarly stopping triggered after {epoch + 1} epochs")
+                print(f"\033[91m\nEarly stopping triggered after {epoch + 1} epochs\033[00m")
                 break
             
             # Step scheduler if provided
@@ -365,10 +365,10 @@ def training(
                     scheduler.step()
                     
         except KeyboardInterrupt:
-            print("\033[31m \nTraining interrupted by user!")
+            print("\033[31m \nTraining interrupted by user!\033[00m")
             break
         except Exception as e:
-            print(f"\033[31m \nError during training: {str(e)}")
+            print(f"\033[31m \nError during training: {str(e)}\033[00m")
             sys.exit()
             
     # Cleanup
@@ -378,11 +378,11 @@ def training(
         if os.path.exists(checkpoint_path):
             checkpoint = torch.load(checkpoint_path, weights_only=True)
             model.load_state_dict(checkpoint['model_state_dict'])
-            print(f"\033[32m Loaded best model with accuracy: {checkpoint['best_acc']:.4f}")
+            print(f"\033[32m Loaded best model with accuracy: {checkpoint['best_acc']:.4f}\033[00m")
             
             
             if test_dataloader is not None:
-                print("\033[34m Running final evaluation on test set...")
+                print("\033[34m Running final evaluation on test set...\033[00m")
                 final_test_loss, final_test_acc = test_step(
                     model=model,
                     test_dataloader=test_dataloader,
@@ -390,12 +390,12 @@ def training(
                     device=device,
                     writer=writer
                 )
-                print(f"\033[32m Final Test Loss: {final_test_loss:.4f}")
-                print(f"\033[32m Final Test Accuracy: {final_test_acc:.4f}")
+                print(f"\033[32m Final Test Loss: {final_test_loss:.4f}\033[00m")
+                print(f"\033[32m Final Test Accuracy: {final_test_acc:.4f}\033[00m")
             writer.close()
             
             
     except Exception as e:
-        print(f"\033[31m Error during cleanup: {str(e)}")
+        print(f"\033[31m Error during cleanup: {str(e)}\033[00m")
         
     return model
