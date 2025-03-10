@@ -27,3 +27,4 @@ prompts.txt
 "src/.DS_Store"
 .cursorrules
 notebooks/playground.ipynb 
+logs/video_evaluation_window_theshold_search/*
