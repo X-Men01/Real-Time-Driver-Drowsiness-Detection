@@ -64,7 +64,7 @@ def test_generate_heatmaps():
     analyzer.create_metrics_dataframe()
     
     # Test generating heatmaps for a few key metrics
-    test_metrics = ['accuracy', 'drowsy_detection_rate', 'false_positive_rate', 'average_detection_latency']
+    test_metrics = ['accuracy', 'drowsy_detection_rate', 'false_positive_rate', 'average_detection_latency',"multiple_detection_rate"]
     analyzer.generate_heatmaps(metrics=test_metrics, save_dir="analysis_output/heatmaps")
     
     print("✅ Heatmap generation test complete")
@@ -75,7 +75,7 @@ def test_enhanced_heatmaps():
     analyzer.create_metrics_dataframe()
     
     # Test generating enhanced heatmaps with optimization direction indicators
-    test_metrics = ['accuracy', 'drowsy_detection_rate', 'false_positive_rate',]
+    test_metrics = ['accuracy', 'drowsy_detection_rate', 'false_positive_rate',"multiple_detection_rate"]
     analyzer.generate_heatmaps(metrics=test_metrics, save_dir="/Users/ahmedalkhulayfi/Desktop/Real-Time-Driver-Drowsiness-Detection/analysis_output")
     
     print("✅ Enhanced heatmap generation complete")
@@ -85,5 +85,12 @@ def test_enhanced_heatmaps():
 
 if __name__ == "__main__":
    
-    test_enhanced_heatmaps()
-   
+   # Initialize the analyzer
+    analyzer = DrowsinessSystemAnalyzer("../../logs/video_evaluation_window_theshold_search")
+
+    # Collect data and create metrics dataframe
+    analyzer.collect_data()
+    analyzer.create_metrics_dataframe()
+
+    # Generate all metric distributions
+    analyzer.create_performance_table(save_path="analysis_output/table_of_top10_0.5 Acc_0.5MDR.png")
