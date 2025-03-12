@@ -18,7 +18,8 @@ The system follows a modular design:
 3. **State Classification**: Classifies eye state (open/closed) and mouth state (yawning/not)
 4. **Decision Logic**: Combines classifications to determine overall drowsiness state
 5. **Alert System**: Triggers audio alerts when drowsiness is detected
-![CNN-Based Approach](assets/CNN-Based-Approach.png) 
+<img src="assets/CNN-Based-Approach.png" alt="CNN-Based Approach" width="500">
+
 
 ## Repository Structure
 ```bash
