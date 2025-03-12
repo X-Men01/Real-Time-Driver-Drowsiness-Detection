@@ -9,9 +9,16 @@ This directory contains modules and notebooks for processing, cleaning, and prep
 Four Jupyter notebooks are provided for cleaning and preparing the dataset classes:
 
 - `cleaning_Close_Eye_Class.ipynb`: Processes and cleans images of closed eyes
+  - [Open in Google Colab](https://colab.research.google.com/drive/1XUDZ0Q1db1zmAECGYAwfTnRts6f6oh0s?usp=share_link)
+  
 - `cleaning_Open_Eye_Class.ipynb`: Processes and cleans images of open eyes
+  - [Open in Google Colab](https://colab.research.google.com/drive/1WiKz70RIO4NmIg_JYDtxZER2mT9bddaN?usp=share_link)
+  
 - `cleaning_Yawn_Class.ipynb`: Processes and cleans images of yawning mouths
+  - [Open in Google Colab](https://colab.research.google.com/drive/1oHNGf7BHHW-fx9UvrWgn5mOW52axJdvZ?usp=share_link)
+  
 - `cleaning_No_Yawn_Class.ipynb`: Processes and cleans images of non-yawning mouths
+  - [Open in Google Colab](https://colab.research.google.com/drive/1gpvVEy29CJRMekirCuOkxfRwHNc7UgNf?usp=share_link)
 
 These notebooks perform tasks such as:
 - Removing low-quality or corrupted images
